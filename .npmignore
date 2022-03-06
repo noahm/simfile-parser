@@ -1,0 +1,13 @@
+node_modules
+build
+.idea
+*.log
+package-lock.json
+.editorconfig
+.nvmrc
+Makefile
+.eslintrc.json
+tsconfig.json
+.scripts
+__tests__
+src
