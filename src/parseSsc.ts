@@ -1,6 +1,6 @@
 import Fraction from "fraction.js";
 import { RawSimfile } from "./parseSong";
-import { FreezeBody, Arrow } from "./types";
+import { FreezeBody, Arrow, StepchartType, Stepchart, Mode } from "./types";
 import {
   determineBeat,
   mergeSimilarBpmRanges,
@@ -9,9 +9,21 @@ import {
   reportError,
 } from "./util";
 
-// Ref: https://github.com/stepmania/stepmania/wiki/sm
+// Ref: https://github.com/stepmania/stepmania/wiki/ssc
 
-const metaTagsToConsume = ["title", "titletranslit", "artist", "banner"];
+const metaTagsToConsume = [
+  "title",
+  "titletranslit",
+  "artist",
+  "banner",
+  "background",
+  "jacket",
+];
+const chartTagsToConsume = ["stepstype", "difficulty", "meter"];
+
+type ChartInProgress = Partial<StepchartType> & {
+  chart?: Stepchart;
+};
 
 function concludesANoteTag(line: string | undefined): boolean {
   if (line === undefined) {
@@ -79,7 +91,7 @@ function findFirstNonEmptyMeasure(
   );
 }
 
-export function parseSm(sm: string, _titlePath: string): RawSimfile {
+export function parseSsc(sm: string, _titlePath: string): RawSimfile {
   const lines = sm.split("\n").map((l) => l.trim());
 
   let i = 0;
@@ -212,25 +224,19 @@ export function parseSm(sm: string, _titlePath: string): RawSimfile {
   }
 
   function parseNotes(lines: string[], i: number, bpmString: string): number {
+    if (!currentChart || !currentChart.mode || !currentChart.difficulty) {
+      throw new Error(
+        "parseSsc: Can't parse notes before mode and difficulty are ready"
+      );
+    }
     // move past #NOTES into the note metadata
     i++;
-    const mode = lines[i++].replace("dance-", "").replace(":", "");
-    i++; // skip author for now
-    const difficulty =
-      normalizedDifficultyMap[lines[i++].replace(":", "").toLowerCase()];
-    const feet = Number(lines[i++].replace(":", ""));
-    i++; // skip groove meter data for now
-
-    // skip couple, versus, etc for now
-    if (mode !== "single" && mode !== "double") {
-      return i + 1;
-    }
 
     // now i is pointing at the first measure
     let arrows: Arrow[] = [];
 
     const { firstNonEmptyMeasureIndex, numMeasuresSkipped } =
-      findFirstNonEmptyMeasure(mode, lines, i);
+      findFirstNonEmptyMeasure(currentChart.mode, lines, i);
     i = firstNonEmptyMeasureIndex;
 
     const firstMeasureIndex = i;
@@ -244,7 +250,7 @@ export function parseSm(sm: string, _titlePath: string): RawSimfile {
     for (; i < lines.length && !concludesANoteTag(lines[i]); ++i) {
       // for now, remove freeze ends as they are handled in parseFreezes
       // TODO: deal with freezes here, no need to have two functions doing basically the same thing
-      const line = trimNoteLine(lines[i], mode).replace(/3/g, "0");
+      const line = trimNoteLine(lines[i], currentChart.mode).replace(/3/g, "0");
 
       if (line.trim() === "") {
         continue;
@@ -268,23 +274,48 @@ export function parseSm(sm: string, _titlePath: string): RawSimfile {
       curOffset = curOffset.add(curMeasureFraction);
     }
 
-    const freezes = parseFreezes(lines, firstMeasureIndex, mode, difficulty);
+    const freezes = parseFreezes(
+      lines,
+      firstMeasureIndex,
+      currentChart.mode,
+      currentChart.difficulty
+    );
 
-    sc.charts![`${mode}-${difficulty}`] = {
+    currentChart.chart = {
       arrows,
       freezes,
       bpm: parseBpms(bpmString, numMeasuresSkipped),
       stops: parseStops(stopsString, numMeasuresSkipped),
     };
 
-    sc.availableTypes!.push({
-      slug: `${mode}-${difficulty}`,
-      mode,
-      difficulty: difficulty as any,
-      feet,
-    });
-
     return i + 1;
+  }
+
+  let currentChart: ChartInProgress | null = null;
+  function startNextChart() {
+    if (currentChart) {
+      const { chart, ...info } = currentChart;
+      info.slug = `${info.mode}-${info.difficulty}`;
+      sc.charts![info.slug] = chart!;
+      sc.availableTypes!.push(info as StepchartType);
+    }
+    currentChart = {};
+  }
+  function consumeChartTag(key: string, value: string) {
+    if (!currentChart) {
+      throw new Error("parseSsc: got chart tag before start of first chart");
+    }
+    switch (key) {
+      case "stepstype":
+        currentChart.mode = value.replace("dance-", "") as Mode;
+        break;
+      case "difficulty":
+        currentChart.difficulty = normalizedDifficultyMap[value.toLowerCase()];
+        break;
+      case "meter":
+        currentChart.feet = Number(value);
+        break;
+    }
   }
 
   function parseTag(lines: string[], index: number): number {
@@ -299,14 +330,19 @@ export function parseSm(sm: string, _titlePath: string): RawSimfile {
 
       if (metaTagsToConsume.includes(tag)) {
         // @ts-ignore
+        // TODO this info now could be specific to a single chart
         sc[tag] = value;
+      } else if (chartTagsToConsume.includes(tag)) {
+        consumeChartTag(tag, value);
       } else if (tag === "bpms") {
         bpmString = value;
       } else if (tag === "stops") {
         stopsString = value;
+      } else if (tag === "notedata") {
+        startNextChart();
       } else if (tag === "notes") {
         if (!bpmString) {
-          throw new Error("parseSm: about to parse notes but never got bpm");
+          throw new Error("parseSsc: about to parse notes but never got bpm");
         }
         return parseNotes(lines, index, bpmString);
       }
@@ -331,10 +367,18 @@ export function parseSm(sm: string, _titlePath: string): RawSimfile {
       }
     }
 
+    renameBackground(sc);
     return sc as RawSimfile;
   } catch (e) {
     throw new Error(
       `error parsing ${sm.substring(0, 300)}\n${printMaybeError(e)}`
     );
+  }
+}
+
+function renameBackground(simfile: any) {
+  if (simfile.background) {
+    simfile.bg = simfile.background;
+    delete simfile.background;
   }
 }

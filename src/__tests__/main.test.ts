@@ -27,6 +27,14 @@ describe("parseAllPacks", () => {
           "songs": 101,
         },
         Object {
+          "name": "Club Fantastic Season 1",
+          "songs": 14,
+        },
+        Object {
+          "name": "Club Fantastic Season 2",
+          "songs": 18,
+        },
+        Object {
           "name": "Easy As Pie 2",
           "songs": 14,
         },

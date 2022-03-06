@@ -2,6 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { parseDwi } from "./parseDwi";
 import { parseSm } from "./parseSm";
+import { parseSsc } from "./parseSsc";
 import { Simfile } from "./types";
 
 export type RawSimfile = Omit<Simfile, "mix" | "title"> & {
@@ -17,6 +18,7 @@ type Parser = (simfileSource: string, titleDir: string) => RawSimfile;
 // TODO: expand support to ssc files as well
 const parsers: Record<string, Parser> = {
   ".sm": parseSm,
+  ".ssc": parseSsc,
   ".dwi": parseDwi,
 };
 
