@@ -1,8 +1,9 @@
 {
   "compilerOptions": {
-    "target": "es6",
-    "module": "commonjs",
+    "target": "es2019",
+    "module": "ES2015",
     "moduleResolution": "node",
+    "isolatedModules": true,
     "declaration": true,
     "strict": true,
     "noImplicitAny": true,
@@ -16,23 +17,11 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": true,
     "sourceMap": true,
-    "outDir": "./dist/tsc/",
-    "types": [
-      "node",
-      "jest"
-    ],
-    "lib": [
-      "ES6",
-      "DOM"
-    ]
+    "outDir": "./dist/",
+    "types": ["node", "jest"],
+    "lib": ["ES2019"]
   },
-  "include": [
-    "src/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "**/*.test.ts"
-  ]
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "**/*.test.ts"]
 }

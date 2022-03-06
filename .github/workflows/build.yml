@@ -6,7 +6,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          always-auth: true
+          node-version: 16
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@noahm"
+
       - name: Init project
-        run: make init
-      - name: Build and tests
-        run: make
+        run: yarn
+
+      - name: Build library
+        run: yarn build
+
+      - name: Test library
+        run: yarn test

@@ -1,14 +1,3 @@
-# Typescript template
+# simfile-parser
 
-- typescript
-- esbuild
-- eslint
-- jest
-- actions
-
-## Getting started
-
-```
-make init
-make
-```
+Original parsing code from [city41/stepcharts](https://github.com/city41/stepcharts)

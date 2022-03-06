@@ -1,15 +1,49 @@
 name: Release
-on:
-  push:
-    tags:
-      - v[0-9]+.[0-9]+.*
+
+# on:
+#   push:
+#     branches:
+#       - master
+
+# TODO:
+# Crib more from https://github.com/Alexandrshy/como-north and enable this
+
 jobs:
-  deploy:
+  Release:
+    name: release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Github Actions Releaser
-        id: actions_releaser
-        uses: raulanatol/github-actions-releaser@v2.0.0
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          always-auth: true
+          node-version: 16
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@noahm"
+
+      - name: Install dependencies
+        run: yarn
+
+      - name: Build
+        run: yarn build
+
+      - name: Semantic Release
+        uses: cycjimmy/semantic-release-action@v2
+        id: semantic
+        with:
+          branch: master
+          extra_plugins: |
+            @semantic-release/git
+            @semantic-release/changelog
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Push updates to branch for major version
+        if: steps.semantic.outputs.new_release_published == 'true'
+        run: git push https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git HEAD:refs/heads/v${{steps.semantic.outputs.new_release_major_version}}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
