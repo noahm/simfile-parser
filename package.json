@@ -18,7 +18,12 @@
     "type": "git",
     "url": "git+https://github.com/noahm/simfile-parser.git"
   },
-  "keywords": [],
+  "keywords": [
+    "stepmania",
+    "itg",
+    "stepfile",
+    "ddr"
+  ],
   "author": {
     "name": "Noah Manneschmidt",
     "email": "noah@manneschmidt.net"
