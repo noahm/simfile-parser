@@ -37,7 +37,7 @@ export function getPack(dir: string): PackWithSongs {
   const songDirs = getDirectories(dir);
 
   const mix = {
-    name: dir.replace(/-/g, " "),
+    name: path.basename(dir).replace(/-/g, " "),
     dir,
     songCount: songDirs.length,
   };
@@ -68,5 +68,5 @@ export function getPack(dir: string): PackWithSongs {
  * @returns parsed files for every song in every pack
  */
 export function getAllPacks(rootDir: string): PackWithSongs[] {
-  return getDirectories(rootDir).map(getPack);
+  return getDirectories(rootDir).map((d) => getPack(path.join(rootDir, d)));
 }

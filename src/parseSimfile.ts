@@ -28,11 +28,11 @@ function getSongFile(songDir: string): string {
   return songFile;
 }
 
-function toSafeName(name: string): string {
-  name = name.replace(".png", "");
-  name = name.replace(/\s/g, "-").replace(/[^\w]/g, "_");
-  return `${name}.png`;
-}
+// function toSafeName(name: string): string {
+//   name = name.replace(".png", "");
+//   name = name.replace(/\s/g, "-").replace(/[^\w]/g, "_");
+//   return `${name}.png`;
+// }
 
 function getBpms(sm: RawSimfile): number[] {
   const chart = Object.values(sm.charts)[0];
