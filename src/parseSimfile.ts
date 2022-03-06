@@ -8,6 +8,8 @@ export type RawSimfile = Omit<Simfile, "mix" | "title"> & {
   title: string;
   titletranslit: string | null;
   banner: string | null;
+  bg: string | null;
+  cover: string | null;
   displayBpm: string | undefined;
 };
 type Parser = (simfileSource: string, titleDir: string) => RawSimfile;
@@ -28,13 +30,34 @@ function getSongFile(songDir: string): string {
   return songFile;
 }
 
+const imageExts = new Set([".png", ".jpg"]);
+function getImages(songDir: string): string[] {
+  const files = fs.readdirSync(songDir);
+  return files.filter((f) => imageExts.has(path.extname(f)));
+}
+
+function guessJacketAndBg(songDir: string) {
+  let jacket: string | null = null;
+  let bg: string | null = null;
+  for (const image of getImages(songDir)) {
+    const ext = path.extname(image);
+    if (image.endsWith("-jacket" + ext)) {
+      jacket = image;
+    }
+    if (image.endsWith("-bg" + ext)) {
+      bg = image;
+    }
+  }
+  return { jacket, bg };
+}
+
 // function toSafeName(name: string): string {
 //   name = name.replace(".png", "");
 //   name = name.replace(/\s/g, "-").replace(/[^\w]/g, "_");
 //   return `${name}.png`;
 // }
 
-function getBpms(sm: RawSimfile): number[] {
+function getBpms(sm: Pick<RawSimfile, "charts">): number[] {
   const chart = Object.values(sm.charts)[0];
   return chart.bpm.map((b) => b.bpm);
 }
@@ -55,7 +78,10 @@ export function parseSimfile(songDirPath: string): Omit<Simfile, "mix"> {
   }
 
   const fileContents = fs.readFileSync(stepchartPath);
-  const rawStepchart = parser(fileContents.toString(), songDirPath);
+  const { banner, ...rawStepchart } = parser(
+    fileContents.toString(),
+    songDirPath
+  );
 
   // TODO decide how to handle banner/jacket/bg images
   // if (
@@ -85,7 +111,8 @@ export function parseSimfile(songDirPath: string): Omit<Simfile, "mix"> {
       titleName: rawStepchart.title,
       translitTitleName: rawStepchart.titletranslit ?? null,
       titleDir: songDirPath,
-      banner: rawStepchart.banner,
+      banner,
+      ...guessJacketAndBg(songDirPath),
     },
     minBpm,
     maxBpm,

@@ -82,6 +82,8 @@ export type Title = {
   translitTitleName: string | null;
   titleDir: string;
   banner: string | null;
+  bg: string | null;
+  jacket: string | null;
 };
 
 export type SongDifficultyType = {
