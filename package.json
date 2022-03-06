@@ -36,16 +36,22 @@
   },
   "homepage": "https://github.com/noahm/simfile-parser#readme",
   "devDependencies": {
-    "@cowcoders/eslint-config": "^1.5.0",
     "@types/jest": "^27.4.0",
     "@types/node": "^16.0.0",
     "@typescript-eslint/eslint-plugin": "^5.13.0",
     "@typescript-eslint/parser": "^5.13.0",
     "confusing-browser-globals": "^1.0.11",
     "eslint": "^8.10.0",
+    "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-jest": "^26.1.1",
+    "eslint-plugin-jsdoc": "^37.9.7",
+    "eslint-plugin-prettier": "^4.0.0",
     "jest": "^27.0.3",
+    "prettier": "^2.5.1",
     "ts-jest": "^27.0.1",
     "typescript": "^4.6.0"
+  },
+  "dependencies": {
+    "fraction.js": "^4.2.0"
   }
 }
