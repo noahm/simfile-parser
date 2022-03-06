@@ -2,7 +2,7 @@
 
 Original parsing code from [city41/stepcharts](https://github.com/city41/stepcharts). Props to Matt for building a really sweet site.
 
-Currently lacks support for ssc format charts. Only works in node (server-side) but browser support may yet appear.
+Only works in node (server-side) but browser support may yet appear.
 
 ## Usage
 
@@ -18,11 +18,11 @@ import {
 
 // Use one of the three parsing functions depending on your needs:
 const allMyStuff = parseAllPacks("/pathToStepmania/Songs");
-const myFavoritePack = parsePack("/pathToStepmania/Songs/Easy as Pie 2");
-const myFavoriteSong = parseSong("/Songs/Easy as Pie 2/Abracadabra");
+const aGreatPack = parsePack("/pathToStepmania/Songs/DDRMAX2");
+const aGreatSong = parseSong(".../Songs/Easy as Pie 2/Abracadabra");
 
 // you can get some top level info about a song's contents too:
-calculateStats(myFavoriteSong.charts["single-challenge"]);
+calculateStats(aGreatSong.charts["single-challenge"]);
 /* returns:
 {
   "freezes": 111,
