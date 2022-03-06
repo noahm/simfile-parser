@@ -1,6 +1,6 @@
 import fs from "fs";
 import Fraction from "fraction.js";
-import { RawSimfile } from "./parseSimfile";
+import { RawSimfile } from "./parseSong";
 import {
   determineBeat,
   mergeSimilarBpmRanges,

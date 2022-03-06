@@ -66,7 +66,7 @@ function getBpms(sm: Pick<RawSimfile, "charts">): number[] {
  * Parse a single simfile. Automatically determines which parser to use depending on chart definition type.
  * @param songDirPath path to song folder (contains a chart definition file [dwi/sm], images, etc)
  */
-export function parseSimfile(songDirPath: string): Omit<Simfile, "mix"> {
+export function parseSong(songDirPath: string): Omit<Simfile, "mix"> {
   const songFile = getSongFile(songDirPath);
   const stepchartPath = path.join(songDirPath, songFile);
   const extension = path.extname(stepchartPath);

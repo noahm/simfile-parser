@@ -1,5 +1,5 @@
 import * as path from "path";
-import { parseSimfile } from "../parseSimfile";
+import { parseSong } from "../parseSong";
 import { Simfile } from "../types";
 
 const packsRoot = path.resolve(__dirname, "../../packs");
@@ -13,9 +13,9 @@ function scrubDataForSnapshot(simfile: Simfile) {
   simfile.title.titleDir = path.relative(packsRoot, simfile.title.titleDir);
 }
 
-describe("parse", () => {
+describe("parseSong", () => {
   test("single old song", () => {
-    const simfile = parseSimfile(path.join(packsRoot, "3rdMix", "AFRONOVA"));
+    const simfile = parseSong(path.join(packsRoot, "3rdMix", "AFRONOVA"));
     scrubDataForSnapshot(simfile);
     expect(simfile).toMatchInlineSnapshot(`
       Object {
@@ -167,7 +167,7 @@ describe("parse", () => {
   });
 
   test("single new song", () => {
-    const simfile = parseSimfile(path.join(packsRoot, "A20-(beta)", "Helios"));
+    const simfile = parseSong(path.join(packsRoot, "A20-(beta)", "Helios"));
     scrubDataForSnapshot(simfile);
     expect(simfile).toMatchInlineSnapshot(`
       Object {

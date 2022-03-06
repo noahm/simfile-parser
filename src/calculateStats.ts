@@ -65,7 +65,7 @@ function isJack(d: Arrow, p: Arrow | undefined): boolean {
   return d.offset - p.offset <= 1 / 8;
 }
 
-function calculateStats(chart: Stepchart): Stats {
+export function calculateStats(chart: Stepchart): Stats {
   const jumps = chart.arrows.filter((a) => isJump(a.direction));
   const freezes = chart.arrows.filter((a) => isFreeze(a.direction));
   const gallops = chart.arrows.filter((a, i, array) =>
@@ -80,5 +80,3 @@ function calculateStats(chart: Stepchart): Stats {
     gallops: gallops.length,
   };
 }
-
-export { calculateStats };

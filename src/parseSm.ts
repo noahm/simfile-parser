@@ -1,5 +1,5 @@
 import Fraction from "fraction.js";
-import { RawSimfile } from "./parseSimfile";
+import { RawSimfile } from "./parseSong";
 import { FreezeBody, Arrow } from "./types";
 import {
   determineBeat,

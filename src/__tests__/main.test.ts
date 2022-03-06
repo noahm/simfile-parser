@@ -1,12 +1,12 @@
 import * as path from "path";
-import { getAllPacks } from "../main";
+import { parseAllPacks } from "../main";
 
 const packsRoot = path.resolve(__dirname, "../../packs");
 
-describe("getAllPacks", () => {
+describe("parseAllPacks", () => {
   test("parses each pack separately", () => {
     expect(
-      getAllPacks(packsRoot).map((p) => ({
+      parseAllPacks(packsRoot).map((p) => ({
         name: p.name,
         songs: p.songCount,
       }))
