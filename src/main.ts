@@ -7,6 +7,7 @@ import { printMaybeError } from "./util";
 export * from "./types";
 export * from "./parseSong";
 export * from "./calculateStats";
+export { setErrorTolerance } from "./util";
 
 export type PackWithSongs = Pack & {
   simfiles: Simfile[];

@@ -6,6 +6,7 @@ import {
   mergeSimilarBpmRanges,
   normalizedDifficultyMap,
   printMaybeError,
+  reportError,
 } from "./util";
 
 const metaTagsToConsume = ["title", "titletranslit", "artist", "banner"];
@@ -178,26 +179,27 @@ function parseSm(sm: string, _titlePath: string): RawSimfile {
       for (let d = 0; d < cleanedLine.length; ++d) {
         if (cleanedLine[d] === "2") {
           if (open[d]) {
-            throw new Error(
+            reportError(
               `${sc.title}, ${mode}, ${difficulty} -- error parsing freezes, found a new starting freeze before a previous one finished`
             );
+          } else {
+            const startBeatFraction = curOffset;
+            open[d] = {
+              direction: d as FreezeBody["direction"],
+              startOffset: startBeatFraction.n / startBeatFraction.d,
+            };
           }
-          const startBeatFraction = curOffset;
-          open[d] = {
-            direction: d as FreezeBody["direction"],
-            startOffset: startBeatFraction.n / startBeatFraction.d,
-          };
         } else if (cleanedLine[d] === "3") {
           if (!open[d]) {
-            throw new Error(
-              `${sc.title}, ${mode}, ${difficulty} -- error parsing freezes, needed to close a freeze that never opened`
+            reportError(
+              `${sc.title}, ${mode}, ${difficulty} -- error parsing freezes, tried to close a freeze that never opened`
             );
+          } else {
+            const endBeatFraction = curOffset.add(new Fraction(1).div(4));
+            open[d]!.endOffset = endBeatFraction.n / endBeatFraction.d;
+            freezes.push(open[d] as FreezeBody);
+            open[d] = undefined;
           }
-
-          const endBeatFraction = curOffset.add(new Fraction(1).div(4));
-          open[d]!.endOffset = endBeatFraction.n / endBeatFraction.d;
-          freezes.push(open[d] as FreezeBody);
-          open[d] = undefined;
         }
       }
 

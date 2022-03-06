@@ -1,6 +1,8 @@
 import * as path from "path";
 import { parseAllPacks } from "../main";
+import { setErrorTolerance } from "../util";
 
+setErrorTolerance("ignore");
 const packsRoot = path.resolve(__dirname, "../../packs");
 
 describe("parseAllPacks", () => {
@@ -23,6 +25,10 @@ describe("parseAllPacks", () => {
         Object {
           "name": "A20 (beta)",
           "songs": 101,
+        },
+        Object {
+          "name": "Easy As Pie 2",
+          "songs": 14,
         },
         Object {
           "name": "SuperNOVA2",

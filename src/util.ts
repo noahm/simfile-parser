@@ -70,3 +70,22 @@ export function printMaybeError(e: any) {
   }
   return "mysterious non-error";
 }
+
+let errorTolerance: "bail" | "warn" | "ignore" = "warn";
+
+export function setErrorTolerance(level: typeof errorTolerance) {
+  errorTolerance = level;
+}
+
+export function reportError(msg: string) {
+  switch (errorTolerance) {
+    case "ignore":
+      break;
+    case "warn":
+      console.warn(msg);
+      break;
+    case "bail":
+    default:
+      throw new Error(msg);
+  }
+}

@@ -1,7 +1,9 @@
 import * as path from "path";
 import { parseSong } from "../parseSong";
 import { Simfile } from "../types";
+import { setErrorTolerance } from "../util";
 
+setErrorTolerance("ignore");
 const packsRoot = path.resolve(__dirname, "../../packs");
 
 function scrubDataForSnapshot(simfile: Simfile) {
