@@ -2,7 +2,7 @@ import * as path from "path";
 import { parseAllPacks } from "../main";
 import { setErrorTolerance } from "../util";
 
-setErrorTolerance("ignore");
+setErrorTolerance("bail");
 const packsRoot = path.resolve(__dirname, "../../packs");
 
 describe("parseAllPacks", () => {

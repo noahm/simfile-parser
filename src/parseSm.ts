@@ -171,15 +171,19 @@ export function parseSm(sm: string, _titlePath: string): RawSimfile {
         continue;
       }
 
-      if (line.indexOf("2") === -1 && line.indexOf("3") === -1) {
+      if (
+        line.indexOf("2") === -1 &&
+        line.indexOf("3") === -1 &&
+        line.indexOf("4") === -1
+      ) {
         curOffset = curOffset.add(curMeasureFraction);
         continue;
       }
 
-      const cleanedLine = line.replace(/[^23]/g, "0");
+      const cleanedLine = line.replace(/[^234]/g, "0");
 
       for (let d = 0; d < cleanedLine.length; ++d) {
-        if (cleanedLine[d] === "2") {
+        if (cleanedLine[d] === "2" || cleanedLine[d] === "4") {
           if (open[d]) {
             reportError(
               `${sc.title}, ${mode}, ${difficulty} -- error parsing freezes, found a new starting freeze before a previous one finished`
