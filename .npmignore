@@ -6,9 +6,10 @@ package-lock.json
 .editorconfig
 .nvmrc
 Makefile
-.eslintrc.json
+.eslintrc.js
 tsconfig.json
 .scripts
 __tests__
 src
 packs
+.github
