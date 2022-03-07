@@ -11,7 +11,8 @@ import {
 
 // Ref: https://github.com/stepmania/stepmania/wiki/sm
 
-const metaTagsToConsume = ["title", "titletranslit", "artist", "banner"];
+const metaTagsToConsume = ["title", "titletranslit", "artist"];
+const imageTagsToConsume = ["banner", "background", "jacket"];
 
 function concludesANoteTag(line: string | undefined): boolean {
   if (line === undefined) {
@@ -89,7 +90,11 @@ export function parseSm(sm: string, _titlePath: string): RawSimfile {
   const sc: Partial<RawSimfile> = {
     charts: {},
     availableTypes: [],
-    banner: null,
+    images: {
+      banner: null,
+      bg: null,
+      jacket: null,
+    },
   };
 
   function parseStops(
@@ -304,6 +309,9 @@ export function parseSm(sm: string, _titlePath: string): RawSimfile {
       if (metaTagsToConsume.includes(tag)) {
         // @ts-ignore
         sc[tag] = value;
+      } else if (imageTagsToConsume.includes(tag)) {
+        // @ts-ignore
+        sc.images![tag] = value;
       } else if (tag === "bpms") {
         bpmString = value;
       } else if (tag === "stops") {

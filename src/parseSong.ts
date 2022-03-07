@@ -8,11 +8,14 @@ import { Simfile } from "./types";
 export type RawSimfile = Omit<Simfile, "mix" | "title"> & {
   title: string;
   titletranslit: string | null;
+  displayBpm: string | undefined;
+  images: Images;
+};
+export interface Images {
   banner: string | null;
   bg: string | null;
-  cover: string | null;
-  displayBpm: string | undefined;
-};
+  jacket: string | null;
+}
 type Parser = (simfileSource: string, titleDir: string) => RawSimfile;
 
 // TODO: expand support to ssc files as well
@@ -38,19 +41,26 @@ function getImages(songDir: string): string[] {
   return files.filter((f) => imageExts.has(path.extname(f)));
 }
 
-function guessJacketAndBg(songDir: string) {
-  let jacket: string | null = null;
-  let bg: string | null = null;
+function guessImages(songDir: string, tagged: Images) {
+  let jacket = tagged.jacket;
+  let bg = tagged.bg;
+  let banner = tagged.banner;
   for (const image of getImages(songDir)) {
     const ext = path.extname(image);
-    if (image.endsWith("-jacket" + ext)) {
+    if (
+      (!jacket && image.endsWith("-jacket" + ext)) ||
+      image.startsWith("jacket.")
+    ) {
       jacket = image;
     }
-    if (image.endsWith("-bg" + ext)) {
+    if ((!bg && image.endsWith("-bg" + ext)) || image.startsWith("bg.")) {
       bg = image;
     }
+    if ((!banner && image.endsWith("-bn" + ext)) || image.startsWith("bn.")) {
+      banner = image;
+    }
   }
-  return { jacket, bg };
+  return { jacket, bg, banner };
 }
 
 // function toSafeName(name: string): string {
@@ -80,25 +90,10 @@ export function parseSong(songDirPath: string): Omit<Simfile, "mix"> {
   }
 
   const fileContents = fs.readFileSync(stepchartPath);
-  const { banner, ...rawStepchart } = parser(
+  const { images, ...rawStepchart } = parser(
     fileContents.toString(),
     songDirPath
   );
-
-  // TODO decide how to handle banner/jacket/bg images
-  // if (
-  //   rawStepchart.banner &&
-  //   fs.existsSync(path.join(songDirPath, rawStepchart.banner))
-  // ) {
-  //   const publicName = toSafeName(`${mixDir}-${rawStepchart.banner}`);
-  //   fs.copyFileSync(
-  //     path.join(songDirPath, rawStepchart.banner),
-  //     path.join("components/bannerImages", publicName)
-  //   );
-  //   rawStepchart.banner = publicName;
-  // } else {
-  //   rawStepchart.banner = null;
-  // }
 
   const bpms = getBpms(rawStepchart);
   const minBpm = Math.round(Math.min(...bpms));
@@ -113,8 +108,7 @@ export function parseSong(songDirPath: string): Omit<Simfile, "mix"> {
       titleName: rawStepchart.title,
       translitTitleName: rawStepchart.titletranslit ?? null,
       titleDir: songDirPath,
-      banner,
-      ...guessJacketAndBg(songDirPath),
+      ...guessImages(songDirPath, images),
     },
     minBpm,
     maxBpm,

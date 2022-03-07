@@ -248,7 +248,11 @@ export function parseDwi(dwi: string, titlePath?: string): RawSimfile {
   const sc: Partial<RawSimfile> = {
     charts: {},
     availableTypes: [],
-    banner: titlePath ? findBanner(titlePath) : null,
+    images: {
+      banner: titlePath ? findBanner(titlePath) : null,
+      bg: null,
+      jacket: null,
+    },
   };
 
   function parseNotes(mode: "single" | "double", rawNotes: string) {

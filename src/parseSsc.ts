@@ -11,14 +11,8 @@ import {
 
 // Ref: https://github.com/stepmania/stepmania/wiki/ssc
 
-const metaTagsToConsume = [
-  "title",
-  "titletranslit",
-  "artist",
-  "banner",
-  "background",
-  "jacket",
-];
+const metaTagsToConsume = ["title", "titletranslit", "artist"];
+const imageTagsToConsume = ["banner", "background", "jacket"];
 const chartTagsToConsume = ["stepstype", "difficulty", "meter"];
 
 type ChartInProgress = Partial<StepchartType> & {
@@ -101,7 +95,11 @@ export function parseSsc(sm: string, _titlePath: string): RawSimfile {
   const sc: Partial<RawSimfile> = {
     charts: {},
     availableTypes: [],
-    banner: null,
+    images: {
+      banner: null,
+      bg: null,
+      jacket: null,
+    },
   };
 
   function parseStops(
@@ -333,9 +331,13 @@ export function parseSsc(sm: string, _titlePath: string): RawSimfile {
       const value = result[2];
 
       if (metaTagsToConsume.includes(tag)) {
+        if (value) {
+          // @ts-ignore
+          sc[tag] = value;
+        }
+      } else if (imageTagsToConsume.includes(tag)) {
         // @ts-ignore
-        // TODO this info now could be specific to a single chart
-        sc[tag] = value;
+        sc.images![tag] = value;
       } else if (chartTagsToConsume.includes(tag)) {
         consumeChartTag(tag, value);
       } else if (tag === "bpms") {
@@ -381,8 +383,10 @@ export function parseSsc(sm: string, _titlePath: string): RawSimfile {
 }
 
 function renameBackground(simfile: any) {
-  if (simfile.background) {
-    simfile.bg = simfile.background;
+  if (typeof simfile.background !== "undefined") {
+    if (simfile.background) {
+      simfile.bg = simfile.background;
+    }
     delete simfile.background;
   }
 }
