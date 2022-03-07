@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.2.1
+
+- Fixed some problems detecting images
+
 ## v0.2.0
 
 - Added SSC parser
