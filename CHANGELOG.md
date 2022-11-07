@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.3.0
 
 - **BREAKING** drop support for Node 12, begin testing in node 18
 - Fix issues parsing SSC: no longer crashes on files with only a single chart, no longer missing the final chart when multiple exist
