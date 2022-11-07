@@ -95,6 +95,12 @@ export function parseSong(songDirPath: string): Omit<Simfile, "mix"> {
     songDirPath
   );
 
+  if (!Object.keys(rawStepchart.charts).length) {
+    throw new Error(
+      `Failed to parse any charts from song: ${rawStepchart.title}`
+    );
+  }
+
   const bpms = getBpms(rawStepchart);
   const minBpm = Math.round(Math.min(...bpms));
   const maxBpm = Math.round(Math.max(...bpms));

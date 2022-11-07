@@ -373,6 +373,10 @@ export function parseSsc(sm: string, _titlePath: string): RawSimfile {
       }
     }
 
+    // commit last pending chart, if it exists
+    if (currentChart) {
+      startNextChart();
+    }
     renameBackground(sc);
     return sc as RawSimfile;
   } catch (e) {

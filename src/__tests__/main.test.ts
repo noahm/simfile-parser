@@ -35,6 +35,10 @@ describe("parseAllPacks", () => {
           "songs": 18,
         },
         Object {
+          "name": "Dance! @ Anime Destiny 2022",
+          "songs": 7,
+        },
+        Object {
           "name": "Easy As Pie 2",
           "songs": 14,
         },

@@ -207,6 +207,12 @@ describe("parseSong", () => {
             "mode": "single",
             "slug": "single-basic",
           },
+          Object {
+            "difficulty": "difficult",
+            "feet": 7,
+            "mode": "single",
+            "slug": "single-difficult",
+          },
         ],
         "charts": Object {
           "double-challenge": Object {
@@ -766,6 +772,64 @@ describe("parseSong", () => {
                 "direction": 0,
                 "endOffset": 83.125,
                 "startOffset": 82,
+              },
+            ],
+            "stops": Array [],
+          },
+          "single-difficult": Object {
+            "arrows": "REDACTED",
+            "bpm": Array [
+              Object {
+                "bpm": 138,
+                "endOffset": null,
+                "startOffset": -4,
+              },
+            ],
+            "freezes": Array [
+              Object {
+                "direction": 2,
+                "endOffset": 17.25,
+                "startOffset": 16.75,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 23.375,
+                "startOffset": 22.875,
+              },
+              Object {
+                "direction": 2,
+                "endOffset": 23.625,
+                "startOffset": 23.125,
+              },
+              Object {
+                "direction": 2,
+                "endOffset": 61.375,
+                "startOffset": 60.875,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 61.625,
+                "startOffset": 61.125,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 69.375,
+                "startOffset": 68.875,
+              },
+              Object {
+                "direction": 2,
+                "endOffset": 69.625,
+                "startOffset": 69.125,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 77.375,
+                "startOffset": 76.875,
+              },
+              Object {
+                "direction": 2,
+                "endOffset": 77.75,
+                "startOffset": 77.125,
               },
             ],
             "stops": Array [],
