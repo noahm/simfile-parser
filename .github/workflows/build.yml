@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [12, 14, 16, 18]
+        node: [14, 16, 18]
     name: Build with node ${{ matrix.node }}
     steps:
       - uses: actions/checkout@v3

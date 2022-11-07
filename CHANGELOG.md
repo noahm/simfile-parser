@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- **BREAKING** drop support for Node 12, begin testing in node 18
+
 ## v0.2.1
 
 - Fixed some problems detecting images
