@@ -6,22 +6,36 @@ import {
   mergeSimilarBpmRanges,
   normalizedDifficultyMap,
   printMaybeError,
+  renameBackground,
   reportError,
 } from "./util";
 
 // Ref: https://github.com/stepmania/stepmania/wiki/sm
 
-const metaTagsToConsume = ["title", "titletranslit", "artist"];
-const imageTagsToConsume = ["banner", "background", "jacket"];
+// eslint-disable-next-line jsdoc/require-jsdoc
+function isMetaTag(tag: string): tag is "title" | "titletranslit" | "artist" {
+  return ["title", "titletranslit", "artist"].includes(tag);
+}
+// eslint-disable-next-line jsdoc/require-jsdoc
+function isImageTag(tag: string): tag is "banner" | "background" | "jacket" {
+  return ["banner", "background", "jacket"].includes(tag);
+}
 
+/**
+ * does a given line count as the end of a notes tag/block?
+ *
+ * @param line contents of the next line to check
+ * @returns boolean
+ */
 function concludesANoteTag(line: string | undefined): boolean {
   if (line === undefined) {
     return true;
   }
 
-  return line[0] === ";" || (line[0] === "," && line[1] === ";");
+  return line.startsWith(";") || line.startsWith(",;");
 }
 
+// eslint-disable-next-line jsdoc/require-jsdoc
 function getMeasureLength(lines: string[], i: number): number {
   let measureLength = 0;
 
@@ -38,6 +52,7 @@ function getMeasureLength(lines: string[], i: number): number {
   return measureLength;
 }
 
+// eslint-disable-next-line jsdoc/require-jsdoc
 function trimNoteLine(line: string, mode: "single" | "double"): string {
   if (mode === "single") {
     return line.substring(0, 4);
@@ -46,10 +61,19 @@ function trimNoteLine(line: string, mode: "single" | "double"): string {
   }
 }
 
+// eslint-disable-next-line jsdoc/require-jsdoc
 function isRest(line: string): boolean {
   return line.split("").every((d) => d === "0");
 }
 
+/**
+ * finds first non-empty measure in a chart
+ *
+ * @param mode gameplay mode of this chart
+ * @param lines all the lines in a current file
+ * @param i starting line index
+ * @returns line index for first step, and how many measures were passed in getting there
+ */
 function findFirstNonEmptyMeasure(
   mode: "single" | "double",
   lines: string[],
@@ -80,14 +104,21 @@ function findFirstNonEmptyMeasure(
   );
 }
 
-export function parseSm(sm: string, _titlePath: string): RawSimfile {
+/**
+ * parse a SM file
+ *
+ * @param sm entire contents of the file
+ * @returns parsed simfile object
+ */
+export function parseSm(sm: string): RawSimfile {
   const lines = sm.split("\n").map((l) => l.trim());
 
   let i = 0;
   let bpmString: string | null = null;
   let stopsString: string | null = null;
 
-  const sc: Partial<RawSimfile> = {
+  const sc: Partial<RawSimfile> &
+    Pick<RawSimfile, "images" | "charts" | "availableTypes"> = {
     charts: {},
     availableTypes: [],
     images: {
@@ -97,6 +128,13 @@ export function parseSm(sm: string, _titlePath: string): RawSimfile {
     },
   };
 
+  /**
+   * parse out bpm stops
+   *
+   * @param stopsString input string
+   * @param emptyOffsetInMeasures number of empty measures at the head of this chart
+   * @returns list of stop locations and durations
+   */
   function parseStops(
     stopsString: string | null,
     emptyOffsetInMeasures: number
@@ -116,6 +154,13 @@ export function parseSm(sm: string, _titlePath: string): RawSimfile {
     });
   }
 
+  /**
+   * parse a sequence of bpm changes
+   *
+   * @param bpmString input string
+   * @param emptyOffsetInMeasures number of empty measures at the head of this chart
+   * @returns a sequence of bpm segments
+   */
   function parseBpms(bpmString: string, emptyOffsetInMeasures: number) {
     // 0=79.3,4=80,33=79.8,36=100,68=120,100=137,103=143,106=139,108=140,130=141.5,132=160,164=182,166=181,168=180;
     const entries = bpmString.split(",");
@@ -148,6 +193,13 @@ export function parseSm(sm: string, _titlePath: string): RawSimfile {
     return mergedBpms;
   }
 
+  /**
+   * @param lines all lines in this file
+   * @param i current line
+   * @param mode chart's gameplay mode, for reporting only
+   * @param difficulty chart's difficulty category, for reporting only
+   * @returns array of parsed freeze note locations
+   */
   function parseFreezes(
     lines: string[],
     i: number,
@@ -201,14 +253,15 @@ export function parseSm(sm: string, _titlePath: string): RawSimfile {
             };
           }
         } else if (cleanedLine[d] === "3") {
-          if (!open[d]) {
+          const thisFreeze = open[d];
+          if (!thisFreeze) {
             reportError(
               `${sc.title}, ${mode}, ${difficulty} -- error parsing freezes, tried to close a freeze that never opened`
             );
           } else {
             const endBeatFraction = curOffset.add(new Fraction(1).div(4));
-            open[d]!.endOffset = endBeatFraction.n / endBeatFraction.d;
-            freezes.push(open[d] as FreezeBody);
+            thisFreeze.endOffset = endBeatFraction.n / endBeatFraction.d;
+            freezes.push(thisFreeze as FreezeBody);
             open[d] = undefined;
           }
         }
@@ -220,6 +273,14 @@ export function parseSm(sm: string, _titlePath: string): RawSimfile {
     return freezes;
   }
 
+  /**
+   * Parse notes info for a chart
+   *
+   * @param lines all lines of current file
+   * @param i current line
+   * @param bpmString string of bpm changes for this chart
+   * @returns number of lines parsed
+   */
   function parseNotes(lines: string[], i: number, bpmString: string): number {
     // move past #NOTES into the note metadata
     i++;
@@ -236,7 +297,7 @@ export function parseSm(sm: string, _titlePath: string): RawSimfile {
     }
 
     // now i is pointing at the first measure
-    let arrows: Arrow[] = [];
+    const arrows: Arrow[] = [];
 
     const { firstNonEmptyMeasureIndex, numMeasuresSkipped } =
       findFirstNonEmptyMeasure(mode, lines, i);
@@ -279,14 +340,14 @@ export function parseSm(sm: string, _titlePath: string): RawSimfile {
 
     const freezes = parseFreezes(lines, firstMeasureIndex, mode, difficulty);
 
-    sc.charts![`${mode}-${difficulty}`] = {
+    sc.charts[`${mode}-${difficulty}`] = {
       arrows,
       freezes,
       bpm: parseBpms(bpmString, numMeasuresSkipped),
       stops: parseStops(stopsString, numMeasuresSkipped),
     };
 
-    sc.availableTypes!.push({
+    sc.availableTypes.push({
       slug: `${mode}-${difficulty}`,
       mode,
       difficulty: difficulty as any,
@@ -296,6 +357,11 @@ export function parseSm(sm: string, _titlePath: string): RawSimfile {
     return i + 1;
   }
 
+  /**
+   * @param lines all lines of the file at hand
+   * @param index current line number
+   * @returns number of lines consumed
+   */
   function parseTag(lines: string[], index: number): number {
     const line = lines[index];
 
@@ -306,12 +372,11 @@ export function parseSm(sm: string, _titlePath: string): RawSimfile {
       const tag = result[1].toLowerCase();
       const value = result[2];
 
-      if (metaTagsToConsume.includes(tag)) {
-        // @ts-ignore
+      if (isMetaTag(tag)) {
         sc[tag] = value;
-      } else if (imageTagsToConsume.includes(tag)) {
-        // @ts-ignore
-        sc.images![tag] = value;
+      } else if (isImageTag(tag)) {
+        // @ts-expect-error: background is not an output value, will be cleaned up later
+        sc.images[tag] = value;
       } else if (tag === "bpms") {
         bpmString = value;
       } else if (tag === "stops") {
@@ -342,7 +407,7 @@ export function parseSm(sm: string, _titlePath: string): RawSimfile {
         i += 1;
       }
     }
-
+    renameBackground(sc.images);
     return sc as RawSimfile;
   } catch (e) {
     throw new Error(

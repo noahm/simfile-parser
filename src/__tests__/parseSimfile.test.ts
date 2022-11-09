@@ -6,6 +6,7 @@ import { setErrorTolerance } from "../util";
 setErrorTolerance("ignore");
 const packsRoot = path.resolve(__dirname, "../../packs");
 
+// eslint-disable-next-line jsdoc/require-jsdoc
 function scrubDataForSnapshot(simfile: Simfile) {
   // drop actual step info for a smaller snapshot
   Object.values(simfile.charts).forEach((chart) => {

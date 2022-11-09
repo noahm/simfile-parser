@@ -9,7 +9,7 @@
   "sideEffects": "false",
   "scripts": {
     "test": "jest",
-    "lint": "eslint --max-warnings 0 . --ext .ts",
+    "lint": "eslint --max-warnings 0 ./src",
     "build": "tsc -p tsconfig.json",
     "clean": "rm -rf dist build",
     "clean-build": "npm run clean && npm run build"
