@@ -6,10 +6,14 @@ import {
   mergeSimilarBpmRanges,
   normalizedDifficultyMap,
   printMaybeError,
+  reportError,
 } from "./util";
 import { Arrow, FreezeBody, Bpm } from "./types";
 
-const metaTagsToConsume = ["title", "artist"];
+// eslint-disable-next-line jsdoc/require-jsdoc
+function isMetaTag(tag: string): tag is "title" | "artist" {
+  return ["title", "artist"].includes(tag);
+}
 
 const dwiToSMDirection: Record<string, Arrow["direction"]> = {
   0: "0000",
@@ -37,6 +41,13 @@ type ArrowParseResult = {
   freezes: FreezeBody[];
 };
 
+/**
+ * Mux data from two pads into a single stream
+ *
+ * @param p1 left pad data
+ * @param p2 right pad data
+ * @returns combined arrow stream
+ */
 function combinePadsIntoOneStream(
   p1: ArrowParseResult,
   p2: ArrowParseResult
@@ -88,6 +99,13 @@ function combinePadsIntoOneStream(
   };
 }
 
+/**
+ * finds first non-empty measure in a chart
+ *
+ * @param p1Notes all notes for p1
+ * @param p2Notes all notes for p2
+ * @returns a number meaning something?
+ */
 function findFirstNonEmptyMeasure(
   p1Notes: string,
   p2Notes: string | undefined
@@ -106,6 +124,11 @@ function findFirstNonEmptyMeasure(
   return i;
 }
 
+/**
+ * @param notes raw arrow data
+ * @param firstNonEmptyMeasureIndex offset at which to begin parsing
+ * @returns parsed result
+ */
 function parseArrowStream(
   notes: string,
   firstNonEmptyMeasureIndex: number
@@ -113,7 +136,7 @@ function parseArrowStream(
   const arrows: Arrow[] = [];
   const freezes: FreezeBody[] = [];
 
-  let currentFreezeDirections: string[] = [];
+  const currentFreezeDirections: string[] = [];
   const openFreezes: Record<
     FreezeBody["direction"],
     Partial<FreezeBody> | null
@@ -151,10 +174,16 @@ function parseArrowStream(
           openFreezes[d as FreezeBody["direction"]]
         ) {
           const of = openFreezes[d as FreezeBody["direction"]];
-          of!.endOffset = curOffset.n / curOffset.d + 0.25;
-          freezes.push(of as FreezeBody);
-          openFreezes[d as FreezeBody["direction"]] = null;
-          smDirectionSplit[d] = "0";
+          if (!of) {
+            reportError(
+              "error parsing dwi freezes, tried to close a freeze that never opened"
+            );
+          } else {
+            of.endOffset = curOffset.n / curOffset.d + 0.25;
+            freezes.push(of as FreezeBody);
+            openFreezes[d as FreezeBody["direction"]] = null;
+            smDirectionSplit[d] = "0";
+          }
         }
       }
 
@@ -225,16 +254,27 @@ function parseArrowStream(
   return { arrows, freezes };
 }
 
+/**
+ * @param titlePath path to song dir
+ * @returns filename of banner, if found
+ */
 function findBanner(titlePath: string): string | null {
   const files = fs.readdirSync(titlePath);
 
   const bannerFile = files.find(
-    (f) => f.endsWith(".png") && f.indexOf("-bg.png") === -1
+    (f) => f.endsWith(".png") && !f.endsWith("-bg.png")
   );
 
   return bannerFile ?? null;
 }
 
+/**
+ * parse a DWI file
+ *
+ * @param dwi entire contents of the file
+ * @param titlePath path to song directory, for image discovery
+ * @returns parsed simfile object
+ */
 export function parseDwi(dwi: string, titlePath?: string): RawSimfile {
   let bpm: string | null = null;
   let changebpm: string | null = null;
@@ -245,7 +285,8 @@ export function parseDwi(dwi: string, titlePath?: string): RawSimfile {
 
   let i = 0;
 
-  const sc: Partial<RawSimfile> = {
+  const sc: Partial<RawSimfile> &
+    Pick<RawSimfile, "images" | "charts" | "availableTypes"> = {
     charts: {},
     availableTypes: [],
     images: {
@@ -255,6 +296,7 @@ export function parseDwi(dwi: string, titlePath?: string): RawSimfile {
     },
   };
 
+  // eslint-disable-next-line jsdoc/require-jsdoc
   function parseNotes(mode: "single" | "double", rawNotes: string) {
     const values = rawNotes.split(":");
     const difficulty = normalizedDifficultyMap[values[0].toLowerCase()];
@@ -278,14 +320,14 @@ export function parseDwi(dwi: string, titlePath?: string): RawSimfile {
       arrowResult = combinePadsIntoOneStream(arrowResult, playerTwoResult);
     }
 
-    sc.availableTypes!.push({
+    sc.availableTypes.push({
       slug: `${mode}-${difficulty}`,
       mode,
       difficulty: difficulty as any,
       feet,
     });
 
-    sc.charts![`${mode}-${difficulty}`] = {
+    sc.charts[`${mode}-${difficulty}`] = {
       arrows: arrowResult.arrows,
       freezes: arrowResult.freezes,
       bpm: determineBpm(firstNonEmptyMeasureIndex),
@@ -293,6 +335,10 @@ export function parseDwi(dwi: string, titlePath?: string): RawSimfile {
     };
   }
 
+  /**
+   * @param emptyOffset number of empty beats at start of chart
+   * @returns list of stop locations and durations
+   */
   function determineStops(emptyOffset: number) {
     if (!stops) {
       return [];
@@ -302,12 +348,16 @@ export function parseDwi(dwi: string, titlePath?: string): RawSimfile {
       const [eigthNoteS, stopDurationS] = s.split("=");
 
       return {
-        offset: Number(eigthNoteS) * (1 / 16) - emptyOffset * (1 / 8),
+        offset: Number(eigthNoteS) / 16 - emptyOffset / 8,
         duration: Number(stopDurationS),
       };
     });
   }
 
+  /**
+   * @param emptyOffset number of empty beats at start of chart
+   * @returns a sequence of bpm segments
+   */
   function determineBpm(emptyOffset: number) {
     let finalBpms: Bpm[] = [];
 
@@ -375,6 +425,11 @@ export function parseDwi(dwi: string, titlePath?: string): RawSimfile {
     return finalBpms;
   }
 
+  /**
+   * @param lines all lines of the file at hand
+   * @param index current line number
+   * @returns number of lines consumed
+   */
   function parseTag(lines: string[], index: number): number {
     const line = lines[index];
 
@@ -385,8 +440,7 @@ export function parseDwi(dwi: string, titlePath?: string): RawSimfile {
       const tag = result[1].toLowerCase();
       const value = result[2];
 
-      if (metaTagsToConsume.includes(tag)) {
-        // @ts-ignore
+      if (isMetaTag(tag)) {
         sc[tag] = value;
       } else if (tag === "displaybpm") {
         displaybpm = value;

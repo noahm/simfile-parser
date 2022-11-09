@@ -1,4 +1,5 @@
 import Fraction from "fraction.js";
+import { Images } from "./parseSong";
 import { Arrow, Bpm, Difficulty } from "./types";
 
 const beats = [
@@ -9,12 +10,19 @@ const beats = [
   new Fraction(1).div(16),
 ];
 
+/**
+ * Picks a quantization color for a given note
+ *
+ * @param offset fractional
+ * @returns number indicating the quantization color
+ */
 export function determineBeat(offset: Fraction): Arrow["beat"] {
   const match = beats.find((b) => offset.mod(b).n === 0);
 
   if (!match) {
-    // didn't find anything? then it's a weirdo like a 5th note or 32nd note, they get colored
-    // the same as 6ths
+    // didn't find anything? then it's a weirdo like a 5th note or 32nd note,
+    // they get colored the same as 6ths
+    // TODO this seems a little over aggressive, color does matter in tech. support 32nds and greater colors
     return 6;
   }
 
@@ -39,31 +47,63 @@ export const normalizedDifficultyMap: Record<string, Difficulty> = {
   edit: "edit",
 };
 
+/**
+ * @param a first bpm
+ * @param b second bpm
+ * @returns true if difference between a and b is less than 1
+ */
 function similarBpm(a: Bpm, b: Bpm): boolean {
   return Math.abs(a.bpm - b.bpm) < 1;
 }
 
+/**
+ * Iterates across a list of bpm regions and collapses adjacent
+ * ones with very similar bpm values into a single region
+ *
+ * @param bpm array of bpms
+ * @returns simplified version of input
+ */
 export function mergeSimilarBpmRanges(bpm: Bpm[]): Bpm[] {
-  return bpm.reduce<Bpm[]>((building, b, i, a) => {
+  return bpm.reduce<Bpm[]>((building, current, i, a) => {
     const prev = a[i - 1];
     const next = a[i + 1];
 
-    if (prev && similarBpm(prev, b)) {
+    if (prev && similarBpm(prev, current)) {
       // this bpm was merged on the last iteration, so skip it
       return building;
     }
 
-    if (next && similarBpm(next, b)) {
+    if (next && similarBpm(next, current)) {
       return building.concat({
-        ...b,
+        ...current,
         endOffset: next.endOffset,
       });
     }
 
-    return building.concat(b);
+    return building.concat(current);
   }, []);
 }
 
+/**
+ * if we found a `background` tag, rename it to `bg`
+ *
+ * @param images image data
+ */
+export function renameBackground(images: Images & { background?: string }) {
+  if (typeof images.background !== "undefined") {
+    if (images.background) {
+      images.bg = images.background;
+    }
+    delete images.background;
+  }
+}
+
+/**
+ * Get a printable error string from a thing which may be an error, or may not be
+ *
+ * @param e error message or other object
+ * @returns printable error string
+ */
 export function printMaybeError(e: any) {
   if (e && typeof e.message === "string") {
     return `${e.message} ${e.stack}`;
@@ -73,10 +113,20 @@ export function printMaybeError(e: any) {
 
 let errorTolerance: "bail" | "warn" | "ignore" = "warn";
 
+/**
+ * set the global error tolerance level for the parser
+ *
+ * @param level a level to use
+ */
 export function setErrorTolerance(level: typeof errorTolerance) {
   errorTolerance = level;
 }
 
+/**
+ * Depending on error tolerance level this may ignore, print, or bail with a given message
+ *
+ * @param msg a message to maybe print or throw
+ */
 export function reportError(msg: string) {
   switch (errorTolerance) {
     case "ignore":

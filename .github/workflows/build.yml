@@ -1,4 +1,4 @@
-name: Build
+name: Status Checks
 on:
   push:
 jobs:
@@ -7,7 +7,7 @@ jobs:
     strategy:
       matrix:
         node: [14, 16, 18]
-    name: Build with node ${{ matrix.node }}
+    name: Checks with Node ${{ matrix.node }}
     steps:
       - uses: actions/checkout@v3
 
@@ -20,10 +20,13 @@ jobs:
           cache: "yarn"
 
       - name: Init project
-        run: yarn
+        run: yarn --frozen-lockfile
 
-      - name: Build library
+      - name: Webpack Build
         run: yarn build
 
-      - name: Test library
+      - name: Unit Tests
         run: yarn test
+
+      - name: eslint
+        run: yarn lint

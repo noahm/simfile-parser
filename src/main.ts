@@ -13,6 +13,10 @@ export type PackWithSongs = Pack & {
   simfiles: Simfile[];
 };
 
+/**
+ * @param dirPath path segments
+ * @returns a list of all child entries of the given path
+ */
 function getFiles(...dirPath: string[]): string[] {
   const builtPath = dirPath.reduce((building, d) => {
     return path.join(building, d);
@@ -21,6 +25,10 @@ function getFiles(...dirPath: string[]): string[] {
   return fs.readdirSync(builtPath);
 }
 
+/**
+ * @param dirPath path segments
+ * @returns a list of child directories of the given path
+ */
 function getDirectories(...dirPath: string[]): string[] {
   const builtPath = dirPath.reduce((building, d) => {
     return path.join(building, d);
@@ -33,7 +41,9 @@ function getDirectories(...dirPath: string[]): string[] {
 
 /**
  * Parse an entire pack and return all data
+ *
  * @param dir path to a pack of songs (contains one or more folders, each containing a song)
+ * @returns info about the pack as a whole and parsed simfile objects for each song
  */
 export function parsePack(dir: string): PackWithSongs {
   const songDirs = getDirectories(dir);
@@ -66,8 +76,9 @@ export function parsePack(dir: string): PackWithSongs {
 
 /**
  * Convenience function to call `getPack` on every immediate subdirectory
+ *
  * @param rootDir path to a stepmania songs directory (contains folders per pack of songs)
- * @returns parsed files for every song in every pack
+ * @returns a list of pack objects, each with a list of simfile objects
  */
 export function parseAllPacks(rootDir: string): PackWithSongs[] {
   return getDirectories(rootDir).map((d) => parsePack(path.join(rootDir, d)));

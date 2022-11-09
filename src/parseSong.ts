@@ -18,13 +18,18 @@ export interface Images {
 }
 type Parser = (simfileSource: string, titleDir: string) => RawSimfile;
 
-// TODO: expand support to ssc files as well
 const parsers: Record<string, Parser> = {
   ".sm": parseSm,
   ".ssc": parseSsc,
   ".dwi": parseDwi,
 };
 
+/**
+ * Find a simfile in a given directory
+ *
+ * @param songDir directory path
+ * @returns filename of the found simfile
+ */
 function getSongFile(songDir: string): string {
   const files = fs.readdirSync(songDir);
   const extensions = Object.keys(parsers);
@@ -36,11 +41,24 @@ function getSongFile(songDir: string): string {
 }
 
 const imageExts = new Set([".png", ".jpg"]);
+/**
+ * Get all image files in a given directory
+ *
+ * @param songDir directory
+ * @returns contents filtered to supported image extentions
+ */
 function getImages(songDir: string): string[] {
   const files = fs.readdirSync(songDir);
   return files.filter((f) => imageExts.has(path.extname(f)));
 }
 
+/**
+ * Make some best guesses about which images should be used for which fields
+ *
+ * @param songDir path to a song directory
+ * @param tagged image metadata found in simfile
+ * @returns final image metadata
+ */
 function guessImages(songDir: string, tagged: Images) {
   let jacket = tagged.jacket;
   let bg = tagged.bg;
@@ -69,6 +87,12 @@ function guessImages(songDir: string, tagged: Images) {
 //   return `${name}.png`;
 // }
 
+/**
+ * get individual bpms of each chart
+ *
+ * @param sm simfile
+ * @returns list of found bpms, one per chart
+ */
 function getBpms(sm: Pick<RawSimfile, "charts">): number[] {
   const chart = Object.values(sm.charts)[0];
   return chart.bpm.map((b) => b.bpm);
@@ -76,7 +100,9 @@ function getBpms(sm: Pick<RawSimfile, "charts">): number[] {
 
 /**
  * Parse a single simfile. Automatically determines which parser to use depending on chart definition type.
+ *
  * @param songDirPath path to song folder (contains a chart definition file [dwi/sm], images, etc)
+ * @returns a simfile object without mix info
  */
 export function parseSong(songDirPath: string): Omit<Simfile, "mix"> {
   const songFile = getSongFile(songDirPath);
