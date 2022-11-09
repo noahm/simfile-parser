@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.4.0
+
+- **BREAKING** renamed some exported types and/or fields
+  - `FreezeBody` => `FreezeLocation`
+  - `Bpm` => `BpmChange`
+  - `Arrow['beat']` => `Arrow['quantization']`
+- Quantization now reports 32nd and 64th steps, anything out of bounds is now reported as a 64th instead of a 12th
+- More correctly return `displayBpm` values as written in the stepfile instead of always calculating a range
+- Added considerable amounts of doc comments on types and functions
+- Fixed potentially incorrect handling of simfiles using the less-standard `BACKGROUND` tag (compared to the more common `BG`)
+
 ## v0.3.0
 
 - **BREAKING** drop support for Node 12, begin testing in node 18
