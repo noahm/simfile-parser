@@ -5,7 +5,10 @@ import { parseSm } from "./parseSm";
 import { parseSsc } from "./parseSsc";
 import { Simfile } from "./types";
 
-export type RawSimfile = Omit<Simfile, "mix" | "title"> & {
+export type RawSimfile = Omit<
+  Simfile,
+  "mix" | "title" | "minBpm" | "maxBpm"
+> & {
   title: string;
   titletranslit: string | null;
   displayBpm: string | undefined;
@@ -131,8 +134,10 @@ export function parseSong(songDirPath: string): Omit<Simfile, "mix"> {
   const minBpm = Math.round(Math.min(...bpms));
   const maxBpm = Math.round(Math.max(...bpms));
 
-  const displayBpm =
-    minBpm === maxBpm ? minBpm.toString() : `${minBpm}-${maxBpm}`;
+  let displayBpm = rawStepchart.displayBpm;
+  if (!displayBpm) {
+    displayBpm = minBpm === maxBpm ? minBpm.toString() : `${minBpm}-${maxBpm}`;
+  }
 
   return {
     ...rawStepchart,

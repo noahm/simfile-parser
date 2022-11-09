@@ -1,6 +1,6 @@
 import Fraction from "fraction.js";
 import { Images } from "./parseSong";
-import { Arrow, Bpm, Difficulty } from "./types";
+import { Arrow, BpmChange, Difficulty } from "./types";
 
 const beats = [
   new Fraction(1).div(4),
@@ -8,6 +8,8 @@ const beats = [
   new Fraction(1).div(8),
   new Fraction(1).div(12),
   new Fraction(1).div(16),
+  new Fraction(1).div(32),
+  new Fraction(1).div(64),
 ];
 
 /**
@@ -16,17 +18,16 @@ const beats = [
  * @param offset fractional
  * @returns number indicating the quantization color
  */
-export function determineBeat(offset: Fraction): Arrow["beat"] {
+export function determineBeat(offset: Fraction): Arrow["quantization"] {
   const match = beats.find((b) => offset.mod(b).n === 0);
 
   if (!match) {
-    // didn't find anything? then it's a weirdo like a 5th note or 32nd note,
-    // they get colored the same as 6ths
-    // TODO this seems a little over aggressive, color does matter in tech. support 32nds and greater colors
-    return 6;
+    // didn't find anything? then it's some kind of weirdo like a 5th note,
+    // they get colored the same as 64ths
+    return 64;
   }
 
-  return match.d as Arrow["beat"];
+  return match.d as Arrow["quantization"];
 }
 
 export const normalizedDifficultyMap: Record<string, Difficulty> = {
@@ -52,7 +53,7 @@ export const normalizedDifficultyMap: Record<string, Difficulty> = {
  * @param b second bpm
  * @returns true if difference between a and b is less than 1
  */
-function similarBpm(a: Bpm, b: Bpm): boolean {
+function similarBpm(a: BpmChange, b: BpmChange): boolean {
   return Math.abs(a.bpm - b.bpm) < 1;
 }
 
@@ -63,8 +64,8 @@ function similarBpm(a: Bpm, b: Bpm): boolean {
  * @param bpm array of bpms
  * @returns simplified version of input
  */
-export function mergeSimilarBpmRanges(bpm: Bpm[]): Bpm[] {
-  return bpm.reduce<Bpm[]>((building, current, i, a) => {
+export function mergeSimilarBpmRanges(bpm: BpmChange[]): BpmChange[] {
+  return bpm.reduce<BpmChange[]>((building, current, i, a) => {
     const prev = a[i - 1];
     const next = a[i + 1];
 

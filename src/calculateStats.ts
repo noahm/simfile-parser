@@ -27,7 +27,7 @@ function isGallop(
     return false;
   }
 
-  if (d.beat !== 4) {
+  if (d.quantization !== 4) {
     return false;
   }
 
@@ -42,7 +42,7 @@ function isGallop(
     return false;
   }
 
-  if (p.beat === 12 || p.beat === 16) {
+  if (p.quantization >= 12) {
     // only consider it a gallop if it's isolated
     if (!g || p.offset - g.offset >= 1 / 8) {
       return d.offset - p.offset < 1 / 8;

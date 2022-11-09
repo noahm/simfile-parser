@@ -1,18 +1,28 @@
+export const enum ArrowType {
+  Empty = 0,
+  Step = 1,
+  Mine = 2,
+}
+export type ArrowRow = `${ArrowType}${ArrowType}${ArrowType}${ArrowType}`;
+
+/**
+ * One of the 8 columns of doubles play, 0 is p1 left, 7 p2 right
+ */
+export type ArrowColumn = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
+
 export interface Arrow {
-  // other beats such as 5ths and 32nds end up being colored
-  // the same as 6ths. This probably should be "color" not "beat" TODO
-  beat: 4 | 6 | 8 | 12 | 16;
-  direction:
-    | `${0 | 1 | 2}${0 | 1 | 2}${0 | 1 | 2}${0 | 1 | 2}`
-    | `${0 | 1 | 2}${0 | 1 | 2}${0 | 1 | 2}${0 | 1 | 2}${0 | 1 | 2}${
-        | 0
-        | 1
-        | 2}${0 | 1 | 2}${0 | 1 | 2}`;
+  /**
+   * Mostly useful for color-coding an arrow.
+   * Anything that doesn't cleanly fit one of
+   * the possible types will be reported as a 64th.
+   */
+  quantization: 4 | 6 | 8 | 12 | 16 | 32 | 64;
+  direction: ArrowRow | `${ArrowRow}${ArrowRow}`;
   offset: number;
 }
 
-export interface FreezeBody {
-  direction: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
+export interface FreezeLocation {
+  direction: ArrowColumn;
   startOffset: number;
   endOffset: number;
 }
@@ -40,8 +50,9 @@ export interface Stats {
   gallops: number;
 }
 
-export interface Bpm {
+export interface BpmChange {
   startOffset: number;
+  /** null if it lasts through the end of the song */
   endOffset: number | null;
   bpm: number;
 }
@@ -53,16 +64,22 @@ export interface Stop {
 
 export interface Stepchart {
   arrows: Arrow[];
-  freezes: FreezeBody[];
-  bpm: Bpm[];
+  freezes: FreezeLocation[];
+  /** all bpm speeds that exist within the song, and the start/end of each */
+  bpm: BpmChange[];
+  /** all locations at which the note field stops, and the duration of each */
   stops: Stop[];
 }
 
 export interface Simfile {
+  /** metadata about the song */
   title: Title;
   artist: string;
+  /** metadata about the song's parent pack */
   pack: Pack;
+  /** list all available charts */
   availableTypes: StepchartType[];
+  /** dict of charts, keyed by `Difficulty` type */
   charts: Record<string, Stepchart>;
   minBpm: number;
   maxBpm: number;

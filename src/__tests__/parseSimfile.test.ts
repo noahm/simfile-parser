@@ -169,6 +169,1280 @@ describe("parseSong", () => {
     `);
   });
 
+  test("single varied bpm song", () => {
+    const simfile = parseSong(path.join(packsRoot, "A20-(beta)", "Silly Love"));
+    scrubDataForSnapshot(simfile);
+    expect(simfile).toMatchInlineSnapshot(`
+      Object {
+        "artist": "DÉ DÉ MOUSE",
+        "availableTypes": Array [
+          Object {
+            "difficulty": "beginner",
+            "feet": 4,
+            "mode": "single",
+            "slug": "single-beginner",
+          },
+          Object {
+            "difficulty": "basic",
+            "feet": 7,
+            "mode": "single",
+            "slug": "single-basic",
+          },
+          Object {
+            "difficulty": "difficult",
+            "feet": 11,
+            "mode": "single",
+            "slug": "single-difficult",
+          },
+          Object {
+            "difficulty": "expert",
+            "feet": 14,
+            "mode": "single",
+            "slug": "single-expert",
+          },
+          Object {
+            "difficulty": "basic",
+            "feet": 7,
+            "mode": "double",
+            "slug": "double-basic",
+          },
+          Object {
+            "difficulty": "difficult",
+            "feet": 11,
+            "mode": "double",
+            "slug": "double-difficult",
+          },
+          Object {
+            "difficulty": "expert",
+            "feet": 14,
+            "mode": "double",
+            "slug": "double-expert",
+          },
+        ],
+        "charts": Object {
+          "double-basic": Object {
+            "arrows": "REDACTED",
+            "bpm": Array [
+              Object {
+                "bpm": 153,
+                "endOffset": 44,
+                "startOffset": -5,
+              },
+              Object {
+                "bpm": 154,
+                "endOffset": 44.75,
+                "startOffset": 44,
+              },
+              Object {
+                "bpm": 153,
+                "endOffset": 51.5,
+                "startOffset": 44.75,
+              },
+              Object {
+                "bpm": 151.5,
+                "endOffset": 52,
+                "startOffset": 51.5,
+              },
+              Object {
+                "bpm": 124,
+                "endOffset": 60,
+                "startOffset": 52,
+              },
+              Object {
+                "bpm": 153,
+                "endOffset": null,
+                "startOffset": 60,
+              },
+            ],
+            "freezes": Array [
+              Object {
+                "direction": 3,
+                "endOffset": 12,
+                "startOffset": 11.5,
+              },
+              Object {
+                "direction": 4,
+                "endOffset": 12,
+                "startOffset": 11.5,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 12.75,
+                "startOffset": 12,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 14.75,
+                "startOffset": 14,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 16.75,
+                "startOffset": 16,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 18.75,
+                "startOffset": 18,
+              },
+              Object {
+                "direction": 4,
+                "endOffset": 27.5,
+                "startOffset": 27,
+              },
+              Object {
+                "direction": 5,
+                "endOffset": 27.75,
+                "startOffset": 27.25,
+              },
+              Object {
+                "direction": 4,
+                "endOffset": 46,
+                "startOffset": 44.75,
+              },
+              Object {
+                "direction": 5,
+                "endOffset": 46.75,
+                "startOffset": 46,
+              },
+              Object {
+                "direction": 6,
+                "endOffset": 48,
+                "startOffset": 46.75,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 69.25,
+                "startOffset": 68,
+              },
+              Object {
+                "direction": 4,
+                "endOffset": 69.25,
+                "startOffset": 68,
+              },
+            ],
+            "stops": Array [],
+          },
+          "double-difficult": Object {
+            "arrows": "REDACTED",
+            "bpm": Array [
+              Object {
+                "bpm": 153,
+                "endOffset": 44,
+                "startOffset": -5,
+              },
+              Object {
+                "bpm": 154,
+                "endOffset": 44.75,
+                "startOffset": 44,
+              },
+              Object {
+                "bpm": 153,
+                "endOffset": 51.5,
+                "startOffset": 44.75,
+              },
+              Object {
+                "bpm": 151.5,
+                "endOffset": 52,
+                "startOffset": 51.5,
+              },
+              Object {
+                "bpm": 124,
+                "endOffset": 60,
+                "startOffset": 52,
+              },
+              Object {
+                "bpm": 153,
+                "endOffset": null,
+                "startOffset": 60,
+              },
+            ],
+            "freezes": Array [
+              Object {
+                "direction": 3,
+                "endOffset": 4,
+                "startOffset": 3.5,
+              },
+              Object {
+                "direction": 4,
+                "endOffset": 4,
+                "startOffset": 3.5,
+              },
+              Object {
+                "direction": 0,
+                "endOffset": 8,
+                "startOffset": 7.5,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 8,
+                "startOffset": 7.5,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 12.125,
+                "startOffset": 11.5,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 13.75,
+                "startOffset": 12.875,
+              },
+              Object {
+                "direction": 5,
+                "endOffset": 15.75,
+                "startOffset": 14.875,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 17.75,
+                "startOffset": 16.875,
+              },
+              Object {
+                "direction": 4,
+                "endOffset": 19.75,
+                "startOffset": 18.875,
+              },
+              Object {
+                "direction": 2,
+                "endOffset": 28.25,
+                "startOffset": 27.75,
+              },
+              Object {
+                "direction": 4,
+                "endOffset": 36.25,
+                "startOffset": 35.75,
+              },
+              Object {
+                "direction": 5,
+                "endOffset": 37,
+                "startOffset": 36.5,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 39,
+                "startOffset": 38.5,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 41,
+                "startOffset": 40.5,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 43.5,
+                "startOffset": 43,
+              },
+              Object {
+                "direction": 4,
+                "endOffset": 43.75,
+                "startOffset": 43.25,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 45.75,
+                "startOffset": 44.75,
+              },
+              Object {
+                "direction": 0,
+                "endOffset": 46.75,
+                "startOffset": 46,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 47.75,
+                "startOffset": 46.75,
+              },
+              Object {
+                "direction": 6,
+                "endOffset": 57.5,
+                "startOffset": 57,
+              },
+              Object {
+                "direction": 5,
+                "endOffset": 57.75,
+                "startOffset": 57.25,
+              },
+              Object {
+                "direction": 2,
+                "endOffset": 69.25,
+                "startOffset": 68,
+              },
+            ],
+            "stops": Array [],
+          },
+          "double-expert": Object {
+            "arrows": "REDACTED",
+            "bpm": Array [
+              Object {
+                "bpm": 153,
+                "endOffset": 44,
+                "startOffset": -5,
+              },
+              Object {
+                "bpm": 154,
+                "endOffset": 44.75,
+                "startOffset": 44,
+              },
+              Object {
+                "bpm": 153,
+                "endOffset": 51.5,
+                "startOffset": 44.75,
+              },
+              Object {
+                "bpm": 151.5,
+                "endOffset": 52,
+                "startOffset": 51.5,
+              },
+              Object {
+                "bpm": 124,
+                "endOffset": 60,
+                "startOffset": 52,
+              },
+              Object {
+                "bpm": 153,
+                "endOffset": null,
+                "startOffset": 60,
+              },
+            ],
+            "freezes": Array [
+              Object {
+                "direction": 7,
+                "endOffset": 1.125,
+                "startOffset": 0.5,
+              },
+              Object {
+                "direction": 0,
+                "endOffset": 3.375,
+                "startOffset": 2.875,
+              },
+              Object {
+                "direction": 6,
+                "endOffset": 5.125,
+                "startOffset": 4.5,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 7.375,
+                "startOffset": 6.875,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 9,
+                "startOffset": 8.5,
+              },
+              Object {
+                "direction": 6,
+                "endOffset": 12.125,
+                "startOffset": 11.5,
+              },
+              Object {
+                "direction": 2,
+                "endOffset": 13.5,
+                "startOffset": 12.875,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 15.5,
+                "startOffset": 14.875,
+              },
+              Object {
+                "direction": 6,
+                "endOffset": 17.5,
+                "startOffset": 16.875,
+              },
+              Object {
+                "direction": 4,
+                "endOffset": 19.5,
+                "startOffset": 18.875,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 20.4375,
+                "startOffset": 20,
+              },
+              Object {
+                "direction": 2,
+                "endOffset": 20.9375,
+                "startOffset": 20.5,
+              },
+              Object {
+                "direction": 4,
+                "endOffset": 21.4375,
+                "startOffset": 21,
+              },
+              Object {
+                "direction": 7,
+                "endOffset": 22.4375,
+                "startOffset": 22,
+              },
+              Object {
+                "direction": 4,
+                "endOffset": 22.9375,
+                "startOffset": 22.5,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 23.4375,
+                "startOffset": 23,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 24.4375,
+                "startOffset": 24,
+              },
+              Object {
+                "direction": 4,
+                "endOffset": 24.9375,
+                "startOffset": 24.5,
+              },
+              Object {
+                "direction": 7,
+                "endOffset": 25.4375,
+                "startOffset": 25,
+              },
+              Object {
+                "direction": 7,
+                "endOffset": 28.9375,
+                "startOffset": 28.5,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 30.9375,
+                "startOffset": 30.5,
+              },
+              Object {
+                "direction": 4,
+                "endOffset": 32.9375,
+                "startOffset": 32.5,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 34.9375,
+                "startOffset": 34.5,
+              },
+              Object {
+                "direction": 4,
+                "endOffset": 42.9375,
+                "startOffset": 42.5,
+              },
+              Object {
+                "direction": 4,
+                "endOffset": 45.5,
+                "startOffset": 44.75,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 45.75,
+                "startOffset": 44.75,
+              },
+              Object {
+                "direction": 4,
+                "endOffset": 46.5,
+                "startOffset": 46,
+              },
+              Object {
+                "direction": 5,
+                "endOffset": 46.75,
+                "startOffset": 46,
+              },
+              Object {
+                "direction": 5,
+                "endOffset": 47.5,
+                "startOffset": 46.75,
+              },
+              Object {
+                "direction": 6,
+                "endOffset": 47.5,
+                "startOffset": 46.75,
+              },
+              Object {
+                "direction": 5,
+                "endOffset": 51.75,
+                "startOffset": 50.875,
+              },
+              Object {
+                "direction": 6,
+                "endOffset": 51.75,
+                "startOffset": 50.875,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 57.375,
+                "startOffset": 57,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 57.625,
+                "startOffset": 57.25,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 59.625,
+                "startOffset": 59,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 61.75,
+                "startOffset": 61.375,
+              },
+              Object {
+                "direction": 4,
+                "endOffset": 61.875,
+                "startOffset": 61.5,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 62,
+                "startOffset": 61.625,
+              },
+              Object {
+                "direction": 2,
+                "endOffset": 62.125,
+                "startOffset": 61.75,
+              },
+              Object {
+                "direction": 0,
+                "endOffset": 62.25,
+                "startOffset": 61.875,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 65.75,
+                "startOffset": 65.375,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 65.875,
+                "startOffset": 65.5,
+              },
+              Object {
+                "direction": 4,
+                "endOffset": 66,
+                "startOffset": 65.625,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 66.125,
+                "startOffset": 65.75,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 66.25,
+                "startOffset": 65.875,
+              },
+              Object {
+                "direction": 7,
+                "endOffset": 69.25,
+                "startOffset": 68,
+              },
+            ],
+            "stops": Array [],
+          },
+          "single-basic": Object {
+            "arrows": "REDACTED",
+            "bpm": Array [
+              Object {
+                "bpm": 153,
+                "endOffset": 44,
+                "startOffset": -5,
+              },
+              Object {
+                "bpm": 154,
+                "endOffset": 44.75,
+                "startOffset": 44,
+              },
+              Object {
+                "bpm": 153,
+                "endOffset": 51.5,
+                "startOffset": 44.75,
+              },
+              Object {
+                "bpm": 151.5,
+                "endOffset": 52,
+                "startOffset": 51.5,
+              },
+              Object {
+                "bpm": 124,
+                "endOffset": 60,
+                "startOffset": 52,
+              },
+              Object {
+                "bpm": 153,
+                "endOffset": null,
+                "startOffset": 60,
+              },
+            ],
+            "freezes": Array [
+              Object {
+                "direction": 0,
+                "endOffset": 12,
+                "startOffset": 11.5,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 12,
+                "startOffset": 11.5,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 13.25,
+                "startOffset": 12,
+              },
+              Object {
+                "direction": 2,
+                "endOffset": 15.25,
+                "startOffset": 14,
+              },
+              Object {
+                "direction": 0,
+                "endOffset": 17.25,
+                "startOffset": 16,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 19.25,
+                "startOffset": 18,
+              },
+              Object {
+                "direction": 0,
+                "endOffset": 27.5,
+                "startOffset": 27,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 27.75,
+                "startOffset": 27.25,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 46,
+                "startOffset": 44.75,
+              },
+              Object {
+                "direction": 0,
+                "endOffset": 46.75,
+                "startOffset": 46,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 48,
+                "startOffset": 46.75,
+              },
+              Object {
+                "direction": 0,
+                "endOffset": 52.5,
+                "startOffset": 52,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 53,
+                "startOffset": 52.5,
+              },
+              Object {
+                "direction": 0,
+                "endOffset": 53.5,
+                "startOffset": 53,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 54,
+                "startOffset": 53.5,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 54.5,
+                "startOffset": 54,
+              },
+              Object {
+                "direction": 2,
+                "endOffset": 55,
+                "startOffset": 54.5,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 55.5,
+                "startOffset": 55,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 56,
+                "startOffset": 55.5,
+              },
+              Object {
+                "direction": 0,
+                "endOffset": 56.5,
+                "startOffset": 56,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 57,
+                "startOffset": 56.5,
+              },
+              Object {
+                "direction": 0,
+                "endOffset": 57.5,
+                "startOffset": 57,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 58,
+                "startOffset": 57.5,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 69.25,
+                "startOffset": 68,
+              },
+            ],
+            "stops": Array [],
+          },
+          "single-beginner": Object {
+            "arrows": "REDACTED",
+            "bpm": Array [
+              Object {
+                "bpm": 153,
+                "endOffset": 44,
+                "startOffset": -5,
+              },
+              Object {
+                "bpm": 154,
+                "endOffset": 44.75,
+                "startOffset": 44,
+              },
+              Object {
+                "bpm": 153,
+                "endOffset": 51.5,
+                "startOffset": 44.75,
+              },
+              Object {
+                "bpm": 151.5,
+                "endOffset": 52,
+                "startOffset": 51.5,
+              },
+              Object {
+                "bpm": 124,
+                "endOffset": 60,
+                "startOffset": 52,
+              },
+              Object {
+                "bpm": 153,
+                "endOffset": null,
+                "startOffset": 60,
+              },
+            ],
+            "freezes": Array [
+              Object {
+                "direction": 0,
+                "endOffset": 13.25,
+                "startOffset": 12,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 15.25,
+                "startOffset": 14,
+              },
+              Object {
+                "direction": 2,
+                "endOffset": 17.25,
+                "startOffset": 16,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 19.25,
+                "startOffset": 18,
+              },
+              Object {
+                "direction": 0,
+                "endOffset": 45.75,
+                "startOffset": 44.75,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 46.75,
+                "startOffset": 46,
+              },
+              Object {
+                "direction": 0,
+                "endOffset": 47.75,
+                "startOffset": 46.75,
+              },
+              Object {
+                "direction": 2,
+                "endOffset": 48.75,
+                "startOffset": 48,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 49.75,
+                "startOffset": 48.75,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 50.75,
+                "startOffset": 50,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 69.25,
+                "startOffset": 68,
+              },
+            ],
+            "stops": Array [],
+          },
+          "single-difficult": Object {
+            "arrows": "REDACTED",
+            "bpm": Array [
+              Object {
+                "bpm": 153,
+                "endOffset": 44,
+                "startOffset": -5,
+              },
+              Object {
+                "bpm": 154,
+                "endOffset": 44.75,
+                "startOffset": 44,
+              },
+              Object {
+                "bpm": 153,
+                "endOffset": 51.5,
+                "startOffset": 44.75,
+              },
+              Object {
+                "bpm": 151.5,
+                "endOffset": 52,
+                "startOffset": 51.5,
+              },
+              Object {
+                "bpm": 124,
+                "endOffset": 60,
+                "startOffset": 52,
+              },
+              Object {
+                "bpm": 153,
+                "endOffset": null,
+                "startOffset": 60,
+              },
+            ],
+            "freezes": Array [
+              Object {
+                "direction": 0,
+                "endOffset": 4,
+                "startOffset": 3.5,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 4,
+                "startOffset": 3.5,
+              },
+              Object {
+                "direction": 0,
+                "endOffset": 8,
+                "startOffset": 7.5,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 8,
+                "startOffset": 7.5,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 12.125,
+                "startOffset": 11.5,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 13.75,
+                "startOffset": 12.875,
+              },
+              Object {
+                "direction": 0,
+                "endOffset": 15.75,
+                "startOffset": 14.875,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 17.75,
+                "startOffset": 16.875,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 19.75,
+                "startOffset": 18.875,
+              },
+              Object {
+                "direction": 0,
+                "endOffset": 28.25,
+                "startOffset": 27.75,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 36.25,
+                "startOffset": 35.75,
+              },
+              Object {
+                "direction": 2,
+                "endOffset": 37,
+                "startOffset": 36.5,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 39,
+                "startOffset": 38.5,
+              },
+              Object {
+                "direction": 2,
+                "endOffset": 41,
+                "startOffset": 40.5,
+              },
+              Object {
+                "direction": 0,
+                "endOffset": 43.5,
+                "startOffset": 43,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 43.75,
+                "startOffset": 43.25,
+              },
+              Object {
+                "direction": 0,
+                "endOffset": 45.5,
+                "startOffset": 44.75,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 45.75,
+                "startOffset": 44.75,
+              },
+              Object {
+                "direction": 2,
+                "endOffset": 46.5,
+                "startOffset": 46,
+              },
+              Object {
+                "direction": 0,
+                "endOffset": 46.75,
+                "startOffset": 46,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 47.5,
+                "startOffset": 46.75,
+              },
+              Object {
+                "direction": 2,
+                "endOffset": 47.75,
+                "startOffset": 46.75,
+              },
+              Object {
+                "direction": 2,
+                "endOffset": 57.5,
+                "startOffset": 57,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 57.75,
+                "startOffset": 57.25,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 69.25,
+                "startOffset": 68,
+              },
+            ],
+            "stops": Array [],
+          },
+          "single-expert": Object {
+            "arrows": "REDACTED",
+            "bpm": Array [
+              Object {
+                "bpm": 153,
+                "endOffset": 44,
+                "startOffset": -5,
+              },
+              Object {
+                "bpm": 154,
+                "endOffset": 44.75,
+                "startOffset": 44,
+              },
+              Object {
+                "bpm": 153,
+                "endOffset": 51.5,
+                "startOffset": 44.75,
+              },
+              Object {
+                "bpm": 151.5,
+                "endOffset": 52,
+                "startOffset": 51.5,
+              },
+              Object {
+                "bpm": 124,
+                "endOffset": 60,
+                "startOffset": 52,
+              },
+              Object {
+                "bpm": 153,
+                "endOffset": null,
+                "startOffset": 60,
+              },
+            ],
+            "freezes": Array [
+              Object {
+                "direction": 2,
+                "endOffset": 0.5,
+                "startOffset": 0,
+              },
+              Object {
+                "direction": 2,
+                "endOffset": 1.125,
+                "startOffset": 0.5,
+              },
+              Object {
+                "direction": 0,
+                "endOffset": 3.375,
+                "startOffset": 2.875,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 5.125,
+                "startOffset": 4.5,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 7.375,
+                "startOffset": 6.875,
+              },
+              Object {
+                "direction": 0,
+                "endOffset": 9,
+                "startOffset": 8.5,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 12.125,
+                "startOffset": 11.5,
+              },
+              Object {
+                "direction": 0,
+                "endOffset": 13.5,
+                "startOffset": 12.875,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 15.5,
+                "startOffset": 14.875,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 17.5,
+                "startOffset": 16.875,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 19.5,
+                "startOffset": 18.875,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 20.4375,
+                "startOffset": 20,
+              },
+              Object {
+                "direction": 2,
+                "endOffset": 20.9375,
+                "startOffset": 20.5,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 21.4375,
+                "startOffset": 21,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 22.4375,
+                "startOffset": 22,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 22.9375,
+                "startOffset": 22.5,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 23.4375,
+                "startOffset": 23,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 24.4375,
+                "startOffset": 24,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 24.9375,
+                "startOffset": 24.5,
+              },
+              Object {
+                "direction": 2,
+                "endOffset": 25.4375,
+                "startOffset": 25,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 28.9375,
+                "startOffset": 28.5,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 30.9375,
+                "startOffset": 30.5,
+              },
+              Object {
+                "direction": 2,
+                "endOffset": 32.9375,
+                "startOffset": 32.5,
+              },
+              Object {
+                "direction": 0,
+                "endOffset": 34.9375,
+                "startOffset": 34.5,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 42.9375,
+                "startOffset": 42.5,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 45.5,
+                "startOffset": 44.75,
+              },
+              Object {
+                "direction": 2,
+                "endOffset": 45.75,
+                "startOffset": 44.75,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 46.5,
+                "startOffset": 46,
+              },
+              Object {
+                "direction": 2,
+                "endOffset": 46.75,
+                "startOffset": 46,
+              },
+              Object {
+                "direction": 0,
+                "endOffset": 47.5,
+                "startOffset": 46.75,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 47.5,
+                "startOffset": 46.75,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 51.75,
+                "startOffset": 50.875,
+              },
+              Object {
+                "direction": 2,
+                "endOffset": 51.75,
+                "startOffset": 50.875,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 57.375,
+                "startOffset": 57,
+              },
+              Object {
+                "direction": 2,
+                "endOffset": 57.625,
+                "startOffset": 57.25,
+              },
+              Object {
+                "direction": 2,
+                "endOffset": 59.625,
+                "startOffset": 59,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 61.75,
+                "startOffset": 61.375,
+              },
+              Object {
+                "direction": 2,
+                "endOffset": 61.875,
+                "startOffset": 61.5,
+              },
+              Object {
+                "direction": 0,
+                "endOffset": 62,
+                "startOffset": 61.625,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 62.125,
+                "startOffset": 61.75,
+              },
+              Object {
+                "direction": 2,
+                "endOffset": 62.25,
+                "startOffset": 61.875,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 65.75,
+                "startOffset": 65.375,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 65.875,
+                "startOffset": 65.5,
+              },
+              Object {
+                "direction": 2,
+                "endOffset": 66,
+                "startOffset": 65.625,
+              },
+              Object {
+                "direction": 1,
+                "endOffset": 66.125,
+                "startOffset": 65.75,
+              },
+              Object {
+                "direction": 0,
+                "endOffset": 66.25,
+                "startOffset": 65.875,
+              },
+              Object {
+                "direction": 3,
+                "endOffset": 69.25,
+                "startOffset": 68,
+              },
+            ],
+            "stops": Array [],
+          },
+        },
+        "displayBpm": "124-153",
+        "maxBpm": 154,
+        "minBpm": 124,
+        "stopCount": 0,
+        "title": Object {
+          "banner": "Silly Love.png",
+          "bg": "Silly Love-bg.png",
+          "jacket": "Silly Love-jacket.png",
+          "titleDir": "A20-(beta)/Silly Love",
+          "titleName": "Silly Love",
+          "translitTitleName": null,
+        },
+      }
+    `);
+  });
+
   test("single new song", () => {
     const simfile = parseSong(
       path.join(packsRoot, "Club Fantastic Season 2", "TerpZone")

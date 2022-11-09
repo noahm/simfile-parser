@@ -8,7 +8,7 @@ import {
   printMaybeError,
   reportError,
 } from "./util";
-import { Arrow, FreezeBody, Bpm } from "./types";
+import { Arrow, FreezeLocation, BpmChange } from "./types";
 
 // eslint-disable-next-line jsdoc/require-jsdoc
 function isMetaTag(tag: string): tag is "title" | "artist" {
@@ -38,7 +38,7 @@ const smToDwiDirection = Object.entries(dwiToSMDirection).reduce<
 
 type ArrowParseResult = {
   arrows: Arrow[];
-  freezes: FreezeBody[];
+  freezes: FreezeLocation[];
 };
 
 /**
@@ -86,7 +86,7 @@ function combinePadsIntoOneStream(
     return {
       ...f,
       direction: f.direction + 4,
-    } as FreezeBody;
+    } as FreezeLocation;
   });
 
   const freezes = p1.freezes
@@ -134,12 +134,12 @@ function parseArrowStream(
   firstNonEmptyMeasureIndex: number
 ): ArrowParseResult {
   const arrows: Arrow[] = [];
-  const freezes: FreezeBody[] = [];
+  const freezes: FreezeLocation[] = [];
 
   const currentFreezeDirections: string[] = [];
   const openFreezes: Record<
-    FreezeBody["direction"],
-    Partial<FreezeBody> | null
+    FreezeLocation["direction"],
+    Partial<FreezeLocation> | null
   > = {
     0: null,
     1: null,
@@ -171,17 +171,17 @@ function parseArrowStream(
       for (let d = 0; d < smDirection.length; ++d) {
         if (
           smDirection[d] === "1" &&
-          openFreezes[d as FreezeBody["direction"]]
+          openFreezes[d as FreezeLocation["direction"]]
         ) {
-          const of = openFreezes[d as FreezeBody["direction"]];
+          const of = openFreezes[d as FreezeLocation["direction"]];
           if (!of) {
             reportError(
               "error parsing dwi freezes, tried to close a freeze that never opened"
             );
           } else {
             of.endOffset = curOffset.n / curOffset.d + 0.25;
-            freezes.push(of as FreezeBody);
-            openFreezes[d as FreezeBody["direction"]] = null;
+            freezes.push(of as FreezeLocation);
+            openFreezes[d as FreezeLocation["direction"]] = null;
             smDirectionSplit[d] = "0";
           }
         }
@@ -201,8 +201,8 @@ function parseArrowStream(
 
       for (let d = 0; d < smDirection.length; ++d) {
         if (smDirection[d] === "1") {
-          openFreezes[d as FreezeBody["direction"]] = {
-            direction: d as FreezeBody["direction"],
+          openFreezes[d as FreezeLocation["direction"]] = {
+            direction: d as FreezeLocation["direction"],
             startOffset: curOffset.n / curOffset.d,
           };
         }
@@ -214,7 +214,7 @@ function parseArrowStream(
           /1/g,
           "2"
         ) as Arrow["direction"],
-        beat: determineBeat(curOffset),
+        quantization: determineBeat(curOffset),
         offset: curOffset.n / curOffset.d,
       });
 
@@ -242,7 +242,7 @@ function parseArrowStream(
       if (direction) {
         arrows.push({
           direction,
-          beat: determineBeat(curOffset),
+          quantization: determineBeat(curOffset),
           offset: curOffset.n / curOffset.d,
         });
       }
@@ -359,7 +359,7 @@ export function parseDwi(dwi: string, titlePath?: string): RawSimfile {
    * @returns a sequence of bpm segments
    */
   function determineBpm(emptyOffset: number) {
-    let finalBpms: Bpm[] = [];
+    let finalBpms: BpmChange[] = [];
 
     if (bpm && !isNaN(Number(bpm))) {
       finalBpms = [{ startOffset: 0, endOffset: null, bpm: Number(bpm) }];
@@ -410,15 +410,6 @@ export function parseDwi(dwi: string, titlePath?: string): RawSimfile {
         // displayBpm is allowed to be '*', I know of no simfiles
         // that actually do that though
         sc.displayBpm = displaybpm;
-      }
-    } else {
-      const minBpm = Math.min(...finalBpms.map((b) => b.bpm));
-      const maxBpm = Math.max(...finalBpms.map((b) => b.bpm));
-
-      if (minBpm === maxBpm) {
-        sc.displayBpm = Math.round(minBpm).toString();
-      } else {
-        sc.displayBpm = `${Math.round(minBpm)}-${Math.round(maxBpm)}`;
       }
     }
 

@@ -1,6 +1,6 @@
 import Fraction from "fraction.js";
 import { RawSimfile } from "./parseSong";
-import { FreezeBody, Arrow, StepchartType, Stepchart, Mode } from "./types";
+import { FreezeLocation, Arrow, StepchartType, Stepchart, Mode } from "./types";
 import {
   determineBeat,
   mergeSimilarBpmRanges,
@@ -167,7 +167,6 @@ export function parseSsc(ssc: string): RawSimfile {
    * @returns a sequence of bpm segments
    */
   function parseBpms(bpmString: string, emptyOffsetInMeasures: number) {
-    // 0=79.3,4=80,33=79.8,36=100,68=120,100=137,103=143,106=139,108=140,130=141.5,132=160,164=182,166=181,168=180;
     const entries = bpmString.split(",");
 
     const bpms = entries.map((e, i, a) => {
@@ -184,18 +183,7 @@ export function parseSsc(ssc: string): RawSimfile {
       };
     });
 
-    const mergedBpms = mergeSimilarBpmRanges(bpms);
-
-    const minBpm = Math.min(...mergedBpms.map((b) => b.bpm));
-    const maxBpm = Math.max(...mergedBpms.map((b) => b.bpm));
-
-    if (Math.abs(minBpm - maxBpm) < 2) {
-      sc.displayBpm = Math.round(minBpm).toString();
-    } else {
-      sc.displayBpm = `${Math.round(minBpm)}-${Math.round(maxBpm)}`;
-    }
-
-    return mergedBpms;
+    return mergeSimilarBpmRanges(bpms);
   }
 
   /**
@@ -210,9 +198,9 @@ export function parseSsc(ssc: string): RawSimfile {
     i: number,
     mode: string,
     difficulty: string
-  ): FreezeBody[] {
-    const freezes: FreezeBody[] = [];
-    const open: Record<number, Partial<FreezeBody> | undefined> = {};
+  ): FreezeLocation[] {
+    const freezes: FreezeLocation[] = [];
+    const open: Record<number, Partial<FreezeLocation> | undefined> = {};
 
     let curOffset = new Fraction(0);
     let curMeasureFraction = new Fraction(1).div(
@@ -253,7 +241,7 @@ export function parseSsc(ssc: string): RawSimfile {
           } else {
             const startBeatFraction = curOffset;
             open[d] = {
-              direction: d as FreezeBody["direction"],
+              direction: d as FreezeLocation["direction"],
               startOffset: startBeatFraction.n / startBeatFraction.d,
             };
           }
@@ -266,7 +254,7 @@ export function parseSsc(ssc: string): RawSimfile {
           } else {
             const endBeatFraction = curOffset.add(new Fraction(1).div(4));
             thisFreeze.endOffset = endBeatFraction.n / endBeatFraction.d;
-            freezes.push(thisFreeze as FreezeBody);
+            freezes.push(thisFreeze as FreezeLocation);
             open[d] = undefined;
           }
         }
@@ -328,7 +316,7 @@ export function parseSsc(ssc: string): RawSimfile {
 
       if (!isRest(line)) {
         arrows.push({
-          beat: determineBeat(curOffset),
+          quantization: determineBeat(curOffset),
           offset: curOffset.n / curOffset.d,
           direction: line as Arrow["direction"],
         });
@@ -418,6 +406,8 @@ export function parseSsc(ssc: string): RawSimfile {
         sc.images[tag] = value;
       } else if (chartTagsToConsume.includes(tag)) {
         consumeChartTag(tag, value);
+      } else if (tag === "displaybpm") {
+        sc.displayBpm = value.replace(":", "-");
       } else if (tag === "bpms") {
         bpmString = value;
       } else if (tag === "stops") {
