@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.4.1
+
+- No changes (just working out auto-publishing)
+
 ## v0.4.0
 
 - **BREAKING** renamed some exported types and/or fields
