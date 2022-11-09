@@ -1,6 +1,7 @@
 node_modules
 build
 .idea
+.tool-versions
 *.log
 package-lock.json
 .editorconfig
