@@ -2,7 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { parseSong } from "./parseSong";
 import { Pack, Simfile } from "./types";
-import { printMaybeError } from "./util";
+import { printMaybeError, reportError } from "./util";
 
 export * from "./types";
 export * from "./parseSong";
@@ -48,28 +48,31 @@ function getDirectories(...dirPath: string[]): string[] {
 export function parsePack(dir: string): PackWithSongs {
   const songDirs = getDirectories(dir);
 
-  const mix = {
+  const pack: Pack = {
     name: path.basename(dir).replace(/-/g, " "),
     dir,
-    songCount: songDirs.length,
+    songCount: 0,
   };
 
-  const simfiles = songDirs.map((songFolder) => {
+  const simfiles: Simfile[] = [];
+  songDirs.map((songFolder) => {
     const songDirPath = path.join(dir, songFolder);
     try {
-      return {
+      simfiles.push({
         ...parseSong(songDirPath),
-        mix,
-      };
+        pack,
+      });
     } catch (e) {
-      throw new Error(
+      reportError(
         `parseStepchart failed for ${songDirPath}: ${printMaybeError(e)}`
       );
     }
   });
 
+  pack.songCount = simfiles.length;
+
   return {
-    ...mix,
+    ...pack,
     simfiles,
   };
 }

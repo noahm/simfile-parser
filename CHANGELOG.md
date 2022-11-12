@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Fixed non-song folders in packs causing fatal errors
+
 ## v0.4.1
 
 - No changes (just working out auto-publishing)
