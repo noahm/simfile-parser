@@ -33,14 +33,10 @@ const parsers: Record<string, Parser> = {
  * @param songDir directory path
  * @returns filename of the found simfile
  */
-function getSongFile(songDir: string): string {
+function getSongFile(songDir: string) {
   const files = fs.readdirSync(songDir);
   const extensions = Object.keys(parsers);
-  const songFile = files.find((f) => extensions.some((ext) => f.endsWith(ext)));
-  if (!songFile) {
-    throw new Error(`No song file found in ${songDir}`);
-  }
-  return songFile;
+  return files.find((f) => extensions.some((ext) => f.endsWith(ext)));
 }
 
 const imageExts = new Set([".png", ".jpg"]);
@@ -105,10 +101,13 @@ function getBpms(sm: Pick<RawSimfile, "charts">): number[] {
  * Parse a single simfile. Automatically determines which parser to use depending on chart definition type.
  *
  * @param songDirPath path to song folder (contains a chart definition file [dwi/sm], images, etc)
- * @returns a simfile object without mix info
+ * @returns a simfile object without mix info or null if no sm/ssc file was found
  */
-export function parseSong(songDirPath: string): Omit<Simfile, "mix"> {
+export function parseSong(songDirPath: string): Omit<Simfile, "mix"> | null {
   const songFile = getSongFile(songDirPath);
+  if (!songFile) {
+    return null;
+  }
   const stepchartPath = path.join(songDirPath, songFile);
   const extension = path.extname(stepchartPath);
 

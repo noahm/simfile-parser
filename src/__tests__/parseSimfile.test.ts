@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import * as path from "path";
 import { parseSong } from "../parseSong";
 import { Simfile } from "../types";
@@ -18,7 +19,7 @@ function scrubDataForSnapshot(simfile: Simfile) {
 
 describe("parseSong", () => {
   test("single old song", () => {
-    const simfile = parseSong(path.join(packsRoot, "3rdMix", "AFRONOVA"));
+    const simfile = parseSong(path.join(packsRoot, "3rdMix", "AFRONOVA"))!;
     scrubDataForSnapshot(simfile);
     expect(simfile).toMatchInlineSnapshot(`
       Object {
@@ -170,7 +171,9 @@ describe("parseSong", () => {
   });
 
   test("single varied bpm song", () => {
-    const simfile = parseSong(path.join(packsRoot, "A20-(beta)", "Silly Love"));
+    const simfile = parseSong(
+      path.join(packsRoot, "A20-(beta)", "Silly Love")
+    )!;
     scrubDataForSnapshot(simfile);
     expect(simfile).toMatchInlineSnapshot(`
       Object {
@@ -1446,7 +1449,7 @@ describe("parseSong", () => {
   test("single new song", () => {
     const simfile = parseSong(
       path.join(packsRoot, "Club Fantastic Season 2", "TerpZone")
-    );
+    )!;
     scrubDataForSnapshot(simfile);
     expect(simfile).toMatchInlineSnapshot(`
       Object {

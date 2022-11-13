@@ -58,13 +58,16 @@ export function parsePack(dir: string): PackWithSongs {
   songDirs.map((songFolder) => {
     const songDirPath = path.join(dir, songFolder);
     try {
-      simfiles.push({
-        ...parseSong(songDirPath),
-        pack,
-      });
+      const songData = parseSong(songDirPath);
+      if (songData) {
+        simfiles.push({
+          ...songData,
+          pack,
+        });
+      }
     } catch (e) {
       reportError(
-        `parseStepchart failed for ${songDirPath}: ${printMaybeError(e)}`
+        `parseStepchart failed for '${songFolder}': ${printMaybeError(e)}`
       );
     }
   });

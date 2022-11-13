@@ -6,7 +6,8 @@ setErrorTolerance("ignore");
 const packsRoot = path.resolve(__dirname, "../../packs");
 
 test("stats", () => {
-  const song = parseSong(path.join(packsRoot, "Easy As Pie 2", "Abracadabra"));
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const song = parseSong(path.join(packsRoot, "Easy As Pie 2", "Abracadabra"))!;
   expect(calculateStats(song.charts["single-challenge"]))
     .toMatchInlineSnapshot(`
     Object {
