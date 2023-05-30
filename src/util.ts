@@ -14,7 +14,6 @@ const beats = [
 
 /**
  * Picks a quantization color for a given note
- *
  * @param offset fractional
  * @returns number indicating the quantization color
  */
@@ -60,7 +59,6 @@ function similarBpm(a: BpmChange, b: BpmChange): boolean {
 /**
  * Iterates across a list of bpm regions and collapses adjacent
  * ones with very similar bpm values into a single region
- *
  * @param bpm array of bpms
  * @returns simplified version of input
  */
@@ -87,7 +85,6 @@ export function mergeSimilarBpmRanges(bpm: BpmChange[]): BpmChange[] {
 
 /**
  * if we found a `background` tag, rename it to `bg`
- *
  * @param images image data
  */
 export function renameBackground(images: Images & { background?: string }) {
@@ -101,7 +98,6 @@ export function renameBackground(images: Images & { background?: string }) {
 
 /**
  * Get a printable error string from a thing which may be an error, or may not be
- *
  * @param e error message or other object
  * @returns printable error string
  */
@@ -116,7 +112,6 @@ let errorTolerance: "bail" | "warn" | "ignore" = "warn";
 
 /**
  * set the global error tolerance level for the parser
- *
  * @param level a level to use
  */
 export function setErrorTolerance(level: typeof errorTolerance) {
@@ -125,7 +120,6 @@ export function setErrorTolerance(level: typeof errorTolerance) {
 
 /**
  * Depending on error tolerance level this may ignore, print, or bail with a given message
- *
  * @param msg a message to maybe print or throw
  */
 export function reportError(msg: string) {

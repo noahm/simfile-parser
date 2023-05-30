@@ -23,7 +23,6 @@ function isImageTag(tag: string): tag is "banner" | "background" | "jacket" {
 
 /**
  * does a given line count as the end of a notes tag/block?
- *
  * @param line contents of the next line to check
  * @returns boolean
  */
@@ -68,7 +67,6 @@ function isRest(line: string): boolean {
 
 /**
  * finds first non-empty measure in a chart
- *
  * @param mode gameplay mode of this chart
  * @param lines all the lines in a current file
  * @param i starting line index
@@ -106,7 +104,6 @@ function findFirstNonEmptyMeasure(
 
 /**
  * parse a SM file
- *
  * @param sm entire contents of the file
  * @returns parsed simfile object
  */
@@ -130,7 +127,6 @@ export function parseSm(sm: string): RawSimfile {
 
   /**
    * parse out bpm stops
-   *
    * @param stopsString input string
    * @param emptyOffsetInMeasures number of empty measures at the head of this chart
    * @returns list of stop locations and durations
@@ -156,7 +152,6 @@ export function parseSm(sm: string): RawSimfile {
 
   /**
    * parse a sequence of bpm changes
-   *
    * @param bpmString input string
    * @param emptyOffsetInMeasures number of empty measures at the head of this chart
    * @returns a sequence of bpm segments
@@ -263,7 +258,6 @@ export function parseSm(sm: string): RawSimfile {
 
   /**
    * Parse notes info for a chart
-   *
    * @param lines all lines of current file
    * @param i current line
    * @param bpmString string of bpm changes for this chart

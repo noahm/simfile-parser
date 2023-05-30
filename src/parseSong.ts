@@ -29,7 +29,6 @@ const parsers: Record<string, Parser> = {
 
 /**
  * Find a simfile in a given directory
- *
  * @param songDir directory path
  * @returns filename of the found simfile
  */
@@ -42,7 +41,6 @@ function getSongFile(songDir: string) {
 const imageExts = new Set([".png", ".jpg"]);
 /**
  * Get all image files in a given directory
- *
  * @param songDir directory
  * @returns contents filtered to supported image extentions
  */
@@ -53,7 +51,6 @@ function getImages(songDir: string): string[] {
 
 /**
  * Make some best guesses about which images should be used for which fields
- *
  * @param songDir path to a song directory
  * @param tagged image metadata found in simfile
  * @returns final image metadata
@@ -88,7 +85,6 @@ function guessImages(songDir: string, tagged: Images) {
 
 /**
  * get individual bpms of each chart
- *
  * @param sm simfile
  * @returns list of found bpms, one per chart
  */
@@ -99,7 +95,6 @@ function getBpms(sm: Pick<RawSimfile, "charts">): number[] {
 
 /**
  * Parse a single simfile. Automatically determines which parser to use depending on chart definition type.
- *
  * @param songDirPath path to song folder (contains a chart definition file [dwi/sm], images, etc)
  * @returns a simfile object without mix info or null if no sm/ssc file was found
  */

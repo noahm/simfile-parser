@@ -41,7 +41,6 @@ function getDirectories(...dirPath: string[]): string[] {
 
 /**
  * Parse an entire pack and return all data
- *
  * @param dir path to a pack of songs (contains one or more folders, each containing a song)
  * @returns info about the pack as a whole and parsed simfile objects for each song
  */
@@ -82,7 +81,6 @@ export function parsePack(dir: string): PackWithSongs {
 
 /**
  * Convenience function to call `getPack` on every immediate subdirectory
- *
  * @param rootDir path to a stepmania songs directory (contains folders per pack of songs)
  * @returns a list of pack objects, each with a list of simfile objects
  */

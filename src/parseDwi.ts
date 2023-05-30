@@ -43,7 +43,6 @@ type ArrowParseResult = {
 
 /**
  * Mux data from two pads into a single stream
- *
  * @param p1 left pad data
  * @param p2 right pad data
  * @returns combined arrow stream
@@ -101,7 +100,6 @@ function combinePadsIntoOneStream(
 
 /**
  * finds first non-empty measure in a chart
- *
  * @param p1Notes all notes for p1
  * @param p2Notes all notes for p2
  * @returns a number meaning something?
@@ -270,7 +268,6 @@ function findBanner(titlePath: string): string | null {
 
 /**
  * parse a DWI file
- *
  * @param dwi entire contents of the file
  * @param titlePath path to song directory, for image discovery
  * @returns parsed simfile object

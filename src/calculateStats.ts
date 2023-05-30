@@ -71,7 +71,6 @@ function isJack(d: Arrow, p: Arrow | undefined): boolean {
 
 /**
  * Calculate human-relevant stats for a given chart
- *
  * @param chart parsed chart object
  * @returns counts for the number of jumps, jacks, freezes, and gallops
  */
