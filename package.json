@@ -41,7 +41,7 @@
   "homepage": "https://github.com/noahm/simfile-parser#readme",
   "devDependencies": {
     "@types/jest": "^27.4.0",
-    "@types/node": "^18.11.9",
+    "@types/node": "^20.3.0",
     "@typescript-eslint/eslint-plugin": "^5.13.0",
     "@typescript-eslint/parser": "^5.13.0",
     "confusing-browser-globals": "^1.0.11",
