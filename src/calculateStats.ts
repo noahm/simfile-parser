@@ -21,7 +21,7 @@ function isFreeze(d: Arrow["direction"]): boolean {
 function isGallop(
   d: Arrow,
   p: Arrow | undefined,
-  g: Arrow | undefined
+  g: Arrow | undefined,
 ): boolean {
   if (!p) {
     return false;
@@ -79,7 +79,7 @@ export function calculateStats(chart: Stepchart): Stats {
   const jumps = chart.arrows.filter((a) => isJump(a.direction));
   const freezes = chart.arrows.filter((a) => isFreeze(a.direction));
   const gallops = chart.arrows.filter((a, i, array) =>
-    isGallop(a, array[i - 1], array[i - 2])
+    isGallop(a, array[i - 1], array[i - 2]),
   );
   const jacks = chart.arrows.filter((a, i, array) => isJack(a, array[i - 1]));
 

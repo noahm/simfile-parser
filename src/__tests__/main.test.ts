@@ -11,7 +11,7 @@ describe("parseAllPacks", () => {
       parseAllPacks(packsRoot).map((p) => ({
         name: p.name,
         songs: p.songCount,
-      }))
+      })),
     ).toMatchInlineSnapshot(`
       Array [
         Object {

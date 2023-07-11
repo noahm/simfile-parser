@@ -172,7 +172,7 @@ describe("parseSong", () => {
 
   test("single varied bpm song", () => {
     const simfile = parseSong(
-      path.join(packsRoot, "A20-(beta)", "Silly Love")
+      path.join(packsRoot, "A20-(beta)", "Silly Love"),
     )!;
     scrubDataForSnapshot(simfile);
     expect(simfile).toMatchInlineSnapshot(`
@@ -1448,7 +1448,7 @@ describe("parseSong", () => {
 
   test("single new song", () => {
     const simfile = parseSong(
-      path.join(packsRoot, "Club Fantastic Season 2", "TerpZone")
+      path.join(packsRoot, "Club Fantastic Season 2", "TerpZone"),
     )!;
     scrubDataForSnapshot(simfile);
     expect(simfile).toMatchInlineSnapshot(`

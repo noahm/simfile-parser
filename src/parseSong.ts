@@ -115,12 +115,12 @@ export function parseSong(songDirPath: string): Omit<Simfile, "mix"> | null {
   const fileContents = fs.readFileSync(stepchartPath);
   const { images, ...rawStepchart } = parser(
     fileContents.toString(),
-    songDirPath
+    songDirPath,
   );
 
   if (!Object.keys(rawStepchart.charts).length) {
     throw new Error(
-      `Failed to parse any charts from song: ${rawStepchart.title}`
+      `Failed to parse any charts from song: ${rawStepchart.title}`,
     );
   }
 

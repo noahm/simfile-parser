@@ -66,7 +66,7 @@ export function parsePack(dir: string): PackWithSongs {
       }
     } catch (e) {
       reportError(
-        `parseStepchart failed for '${songFolder}': ${printMaybeError(e)}`
+        `parseStepchart failed for '${songFolder}': ${printMaybeError(e)}`,
       );
     }
   });
