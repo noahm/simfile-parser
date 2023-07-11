@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Switched package output to pure ESM
+- Removed dependency on 'fraction.js'
+
 ## v0.5.0
 
 - ** BREAKING ** drop support for Node 14

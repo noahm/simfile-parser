@@ -1,9 +1,9 @@
-import * as fs from "fs";
-import * as path from "path";
-import { parseDwi } from "./parseDwi";
-import { parseSm } from "./parseSm";
-import { parseSsc } from "./parseSsc";
-import { Simfile } from "./types";
+import * as fs from "node:fs";
+import * as path from "node:path";
+import { parseDwi } from "./parseDwi.js";
+import { parseSm } from "./parseSm.js";
+import { parseSsc } from "./parseSsc.js";
+import { Simfile } from "./types.js";
 
 export type RawSimfile = Omit<
   Simfile,
