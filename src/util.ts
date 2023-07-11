@@ -1,15 +1,15 @@
-import Fraction from "fraction.js";
-import { Images } from "./parseSong";
-import { Arrow, BpmChange, Difficulty } from "./types";
+import { Fraction } from "./fraction.js";
+import { Images } from "./parseSong.js";
+import { Arrow, BpmChange, Difficulty } from "./types.js";
 
 const beats = [
-  new Fraction(1).div(4),
-  new Fraction(1).div(6),
-  new Fraction(1).div(8),
-  new Fraction(1).div(12),
-  new Fraction(1).div(16),
-  new Fraction(1).div(32),
-  new Fraction(1).div(64),
+  new Fraction(1, 4),
+  new Fraction(1, 6),
+  new Fraction(1, 8),
+  new Fraction(1, 12),
+  new Fraction(1, 16),
+  new Fraction(1, 32),
+  new Fraction(1, 64),
 ];
 
 /**

@@ -1,4 +1,4 @@
-import { Arrow, Stepchart, Stats } from "./types";
+import { Arrow, Stepchart, Stats } from "./types.js";
 
 // eslint-disable-next-line jsdoc/require-jsdoc
 function isJump(d: Arrow["direction"]): boolean {

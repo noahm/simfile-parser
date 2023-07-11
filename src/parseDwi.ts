@@ -1,14 +1,14 @@
-import fs from "fs";
-import Fraction from "fraction.js";
-import { RawSimfile } from "./parseSong";
+import fs from "node:fs";
+import { Fraction } from "./fraction.js";
+import { RawSimfile } from "./parseSong.js";
 import {
   determineBeat,
   mergeSimilarBpmRanges,
   normalizedDifficultyMap,
   printMaybeError,
   reportError,
-} from "./util";
-import { Arrow, FreezeLocation, BpmChange } from "./types";
+} from "./util.js";
+import { Arrow, FreezeLocation, BpmChange } from "./types.js";
 
 // eslint-disable-next-line jsdoc/require-jsdoc
 function isMetaTag(tag: string): tag is "title" | "artist" {
@@ -151,7 +151,7 @@ function parseArrowStream(
 
   let curOffset = new Fraction(0);
   // dwi's default increment is 8th notes
-  let curMeasureFraction = new Fraction(1).div(8);
+  let curMeasureFraction = new Fraction(1, 8);
 
   for (
     let i = firstNonEmptyMeasureIndex;
@@ -223,15 +223,15 @@ function parseArrowStream(
       i += 2;
       curOffset = curOffset.add(curMeasureFraction);
     } else if (note === "(") {
-      curMeasureFraction = new Fraction(1).div(16);
+      curMeasureFraction = new Fraction(1, 16);
     } else if (note === "[") {
-      curMeasureFraction = new Fraction(1).div(24);
+      curMeasureFraction = new Fraction(1, 24);
     } else if (note === "{") {
-      curMeasureFraction = new Fraction(1).div(64);
+      curMeasureFraction = new Fraction(1, 64);
     } else if (note === "`") {
-      curMeasureFraction = new Fraction(1).div(192);
+      curMeasureFraction = new Fraction(1, 192);
     } else if ([")", "]", "}", "'"].includes(note)) {
-      curMeasureFraction = new Fraction(1).div(8);
+      curMeasureFraction = new Fraction(1, 8);
     } else if (note === "0") {
       curOffset = curOffset.add(curMeasureFraction);
     } else {
