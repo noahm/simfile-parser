@@ -1,10 +1,10 @@
 # simfile-parser
 
-![npm](https://img.shields.io/npm/v/simfile-parser) ![npm bundle size](https://img.shields.io/bundlephobia/min/simfile-parser) 
+[![npm](https://img.shields.io/npm/v/simfile-parser)](https://www.npmjs.com/package/simfile-parser) [![npm bundle size](https://img.shields.io/bundlephobia/min/simfile-parser)](https://bundlephobia.com/package/simfile-parser)
 
 Original parsing code from [city41/stepcharts](https://github.com/city41/stepcharts). Props to Matt for building a really sweet site.
 
-Only works in node (server-side) but browser support may yet appear.
+Only works in node (server-side) for now but browser support is on the radar.
 
 ## Usage
 

@@ -9,8 +9,8 @@ package-lock.json
 Makefile
 .eslintrc.js
 tsconfig.json
+*.sh
 .scripts
 __tests__
-src
 packs
 .github
