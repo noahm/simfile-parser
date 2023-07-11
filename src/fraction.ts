@@ -8,6 +8,7 @@
  * See: https://github.com/infusion/Fraction.js/blob/master/fraction.js
  *********/
 
+// eslint-disable-next-line jsdoc/require-jsdoc
 function gcd(a: number, b: number) {
   if (!a) return b;
   if (!b) return a;
