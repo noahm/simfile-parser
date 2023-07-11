@@ -10,7 +10,7 @@ test("stats", () => {
   const song = parseSong(path.join(packsRoot, "Easy As Pie 2", "Abracadabra"))!;
   expect(calculateStats(song.charts["single-challenge"]))
     .toMatchInlineSnapshot(`
-    Object {
+    {
       "freezes": 111,
       "gallops": 0,
       "jacks": 22,

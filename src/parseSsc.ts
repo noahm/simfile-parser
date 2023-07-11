@@ -1,6 +1,12 @@
-import Fraction from "fraction.js";
-import { RawSimfile } from "./parseSong";
-import { FreezeLocation, Arrow, StepchartType, Stepchart, Mode } from "./types";
+import { Fraction } from "./fraction.js";
+import { RawSimfile } from "./parseSong.js";
+import {
+  FreezeLocation,
+  Arrow,
+  StepchartType,
+  Stepchart,
+  Mode,
+} from "./types.js";
 import {
   determineBeat,
   mergeSimilarBpmRanges,
@@ -8,7 +14,7 @@ import {
   printMaybeError,
   renameBackground,
   reportError,
-} from "./util";
+} from "./util.js";
 
 // Ref: https://github.com/stepmania/stepmania/wiki/ssc
 
@@ -198,9 +204,7 @@ export function parseSsc(ssc: string): RawSimfile {
     const open: Record<number, Partial<FreezeLocation> | undefined> = {};
 
     let curOffset = new Fraction(0);
-    let curMeasureFraction = new Fraction(1).div(
-      getMeasureLength(lines, i) || 1
-    );
+    let curMeasureFraction = new Fraction(1, getMeasureLength(lines, i) || 1);
 
     for (; i < lines.length && !concludesANoteTag(lines[i]); ++i) {
       const line = lines[i];
@@ -210,7 +214,8 @@ export function parseSsc(ssc: string): RawSimfile {
       }
 
       if (line[0] === ",") {
-        curMeasureFraction = new Fraction(1).div(
+        curMeasureFraction = new Fraction(
+          1,
           getMeasureLength(lines, i + 1) || 1
         );
         continue;
@@ -247,7 +252,7 @@ export function parseSsc(ssc: string): RawSimfile {
               `${sc.title}, ${mode}, ${difficulty} -- error parsing freezes, tried to close a freeze that never opened`
             );
           } else {
-            const endBeatFraction = curOffset.add(new Fraction(1).div(4));
+            const endBeatFraction = curOffset.add(new Fraction(1, 4));
             thisFreeze.endOffset = endBeatFraction.n / endBeatFraction.d;
             freezes.push(thisFreeze as FreezeLocation);
             open[d] = undefined;
@@ -288,9 +293,7 @@ export function parseSsc(ssc: string): RawSimfile {
     let curOffset = new Fraction(0);
     // in case the measure is size zero, fall back to dividing by one
     // this is just being defensive, this would mean the stepfile has no notes in it
-    let curMeasureFraction = new Fraction(1).div(
-      getMeasureLength(lines, i) || 1
-    );
+    let curMeasureFraction = new Fraction(1, getMeasureLength(lines, i) || 1);
 
     for (; i < lines.length && !concludesANoteTag(lines[i]); ++i) {
       // for now, remove freeze ends as they are handled in parseFreezes
@@ -302,7 +305,8 @@ export function parseSsc(ssc: string): RawSimfile {
       }
 
       if (line.startsWith(",")) {
-        curMeasureFraction = new Fraction(1).div(
+        curMeasureFraction = new Fraction(
+          1,
           getMeasureLength(lines, i + 1) || 1
         );
         continue;

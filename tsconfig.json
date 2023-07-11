@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "target": "es2019",
-    "module": "CommonJS",
-    "moduleResolution": "node",
+    "target": "ES2020",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "declaration": true,
     "strict": true,
     "noImplicitAny": true,
@@ -19,7 +19,7 @@
     "sourceMap": true,
     "outDir": "./dist/",
     "types": ["node", "jest"],
-    "lib": ["ES2019"]
+    "lib": ["ES2020"]
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "**/*.test.ts"]

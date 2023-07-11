@@ -1,13 +1,13 @@
-import * as fs from "fs";
-import * as path from "path";
-import { parseSong } from "./parseSong";
-import { Pack, Simfile } from "./types";
-import { printMaybeError, reportError } from "./util";
+import * as fs from "node:fs";
+import * as path from "node:path";
+import { parseSong } from "./parseSong.js";
+import { Pack, Simfile } from "./types.js";
+import { printMaybeError, reportError } from "./util.js";
 
-export * from "./types";
-export * from "./parseSong";
-export * from "./calculateStats";
-export { setErrorTolerance } from "./util";
+export * from "./types.js";
+export * from "./parseSong.js";
+export * from "./calculateStats.js";
+export { setErrorTolerance } from "./util.js";
 
 export type PackWithSongs = Pack & {
   simfiles: Simfile[];
