@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.6.0
 
 - **BREAKING** switched package output to pure ESM
 - Removed dependency on 'fraction.js'
