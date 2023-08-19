@@ -28,7 +28,7 @@ describe("parseAllPacks", () => {
         },
         {
           "name": "BITE6 ITG Customs",
-          "songs": 1,
+          "songs": 2,
         },
         {
           "name": "Club Fantastic Season 1",

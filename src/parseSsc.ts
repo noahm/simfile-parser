@@ -404,7 +404,8 @@ export function parseSsc(ssc: string): RawSimfile {
       } else if (chartTagsToConsume.includes(tag)) {
         consumeChartTag(tag, value);
       } else if (tag === "displaybpm") {
-        sc.displayBpm = value.replace(":", "-");
+        const values = value.split(":").map((n) => Math.round(parseFloat(n)));
+        sc.displayBpm = values.join("-");
       } else if (tag === "bpms") {
         bpmString = value;
         // continue reading lines if BPM changes happen to be broken down into multiple lines

@@ -3123,4 +3123,436 @@ describe("parseSong", () => {
       }
     `);
   });
+
+  test("modern display bpm song", () => {
+    const simfile = parseSong(
+      path.join(packsRoot, "BITE6 ITG Customs", "[T11] Fracture Ray")
+    )!;
+    scrubDataForSnapshot(simfile);
+    expect(simfile).toMatchInlineSnapshot(`
+      {
+        "artist": "削除",
+        "availableTypes": [
+          {
+            "difficulty": "challenge",
+            "feet": 12,
+            "mode": "single",
+            "slug": "single-challenge",
+          },
+        ],
+        "charts": {
+          "single-challenge": {
+            "arrows": "REDACTED",
+            "bpm": [
+              {
+                "bpm": 50,
+                "endOffset": 4,
+                "startOffset": -1,
+              },
+              {
+                "bpm": 25,
+                "endOffset": 4.75,
+                "startOffset": 4,
+              },
+              {
+                "bpm": 16.667,
+                "endOffset": 4.875,
+                "startOffset": 4.75,
+              },
+              {
+                "bpm": 50,
+                "endOffset": 5,
+                "startOffset": 4.875,
+              },
+              {
+                "bpm": 100,
+                "endOffset": 21,
+                "startOffset": 5,
+              },
+              {
+                "bpm": 50,
+                "endOffset": 23,
+                "startOffset": 21,
+              },
+              {
+                "bpm": 100,
+                "endOffset": 30,
+                "startOffset": 23,
+              },
+              {
+                "bpm": 50,
+                "endOffset": 30.5,
+                "startOffset": 30,
+              },
+              {
+                "bpm": 100,
+                "endOffset": 48.5,
+                "startOffset": 30.5,
+              },
+              {
+                "bpm": 50,
+                "endOffset": null,
+                "startOffset": 48.5,
+              },
+            ],
+            "freezes": [
+              {
+                "direction": 3,
+                "endOffset": 0.75,
+                "startOffset": 0,
+              },
+              {
+                "direction": 0,
+                "endOffset": 1,
+                "startOffset": 0.5,
+              },
+              {
+                "direction": 0,
+                "endOffset": 2,
+                "startOffset": 1.5,
+              },
+              {
+                "direction": 3,
+                "endOffset": 5.1875,
+                "startOffset": 4.875,
+              },
+              {
+                "direction": 0,
+                "endOffset": 5.4375,
+                "startOffset": 5,
+              },
+              {
+                "direction": 3,
+                "endOffset": 5.75,
+                "startOffset": 5.25,
+              },
+              {
+                "direction": 1,
+                "endOffset": 6.0625,
+                "startOffset": 5.75,
+              },
+              {
+                "direction": 0,
+                "endOffset": 6.375,
+                "startOffset": 6,
+              },
+              {
+                "direction": 2,
+                "endOffset": 6.75,
+                "startOffset": 6.25,
+              },
+              {
+                "direction": 3,
+                "endOffset": 7.4375,
+                "startOffset": 7,
+              },
+              {
+                "direction": 0,
+                "endOffset": 7.75,
+                "startOffset": 7.25,
+              },
+              {
+                "direction": 0,
+                "endOffset": 8.5,
+                "startOffset": 8,
+              },
+              {
+                "direction": 2,
+                "endOffset": 9.375,
+                "startOffset": 9,
+              },
+              {
+                "direction": 3,
+                "endOffset": 9.625,
+                "startOffset": 9.25,
+              },
+              {
+                "direction": 3,
+                "endOffset": 10.1875,
+                "startOffset": 9.75,
+              },
+              {
+                "direction": 2,
+                "endOffset": 10.5,
+                "startOffset": 10,
+              },
+              {
+                "direction": 0,
+                "endOffset": 11.5,
+                "startOffset": 11,
+              },
+              {
+                "direction": 2,
+                "endOffset": 12.125,
+                "startOffset": 11.75,
+              },
+              {
+                "direction": 3,
+                "endOffset": 12.5,
+                "startOffset": 12,
+              },
+              {
+                "direction": 2,
+                "endOffset": 13.6875,
+                "startOffset": 13.25,
+              },
+              {
+                "direction": 2,
+                "endOffset": 14.71875,
+                "startOffset": 14.375,
+              },
+              {
+                "direction": 3,
+                "endOffset": 15.1875,
+                "startOffset": 14.875,
+              },
+              {
+                "direction": 2,
+                "endOffset": 19.4375,
+                "startOffset": 19,
+              },
+              {
+                "direction": 2,
+                "endOffset": 20,
+                "startOffset": 19.625,
+              },
+              {
+                "direction": 0,
+                "endOffset": 20.5,
+                "startOffset": 20.125,
+              },
+              {
+                "direction": 1,
+                "endOffset": 20.75,
+                "startOffset": 20.3125,
+              },
+              {
+                "direction": 3,
+                "endOffset": 20.875,
+                "startOffset": 20.5625,
+              },
+              {
+                "direction": 3,
+                "endOffset": 23.75,
+                "startOffset": 23,
+              },
+              {
+                "direction": 3,
+                "endOffset": 24.5,
+                "startOffset": 24,
+              },
+              {
+                "direction": 2,
+                "endOffset": 24.75,
+                "startOffset": 24.25,
+              },
+              {
+                "direction": 1,
+                "endOffset": 25.125,
+                "startOffset": 24.5,
+              },
+              {
+                "direction": 0,
+                "endOffset": 25.75,
+                "startOffset": 25,
+              },
+              {
+                "direction": 3,
+                "endOffset": 26,
+                "startOffset": 25.5,
+              },
+              {
+                "direction": 1,
+                "endOffset": 26.25,
+                "startOffset": 25.75,
+              },
+              {
+                "direction": 2,
+                "endOffset": 26.5,
+                "startOffset": 26,
+              },
+              {
+                "direction": 1,
+                "endOffset": 26.75,
+                "startOffset": 26.25,
+              },
+              {
+                "direction": 3,
+                "endOffset": 27.125,
+                "startOffset": 26.5,
+              },
+              {
+                "direction": 0,
+                "endOffset": 27.8125,
+                "startOffset": 27,
+              },
+              {
+                "direction": 1,
+                "endOffset": 28,
+                "startOffset": 27.5625,
+              },
+              {
+                "direction": 2,
+                "endOffset": 28.5,
+                "startOffset": 28.0625,
+              },
+              {
+                "direction": 0,
+                "endOffset": 28.75,
+                "startOffset": 28.25,
+              },
+              {
+                "direction": 1,
+                "endOffset": 29.125,
+                "startOffset": 28.5,
+              },
+              {
+                "direction": 0,
+                "endOffset": 29.75,
+                "startOffset": 29,
+              },
+              {
+                "direction": 2,
+                "endOffset": 30,
+                "startOffset": 29.5,
+              },
+              {
+                "direction": 1,
+                "endOffset": 30.125,
+                "startOffset": 29.75,
+              },
+              {
+                "direction": 0,
+                "endOffset": 31,
+                "startOffset": 30.5,
+              },
+              {
+                "direction": 0,
+                "endOffset": 31.59375,
+                "startOffset": 31.25,
+              },
+              {
+                "direction": 1,
+                "endOffset": 33,
+                "startOffset": 32.5,
+              },
+              {
+                "direction": 3,
+                "endOffset": 33.9375,
+                "startOffset": 33.5,
+              },
+              {
+                "direction": 2,
+                "endOffset": 34.625,
+                "startOffset": 34.25,
+              },
+              {
+                "direction": 1,
+                "endOffset": 34.875,
+                "startOffset": 34.5,
+              },
+              {
+                "direction": 0,
+                "endOffset": 35.125,
+                "startOffset": 34.75,
+              },
+              {
+                "direction": 2,
+                "endOffset": 35.375,
+                "startOffset": 35,
+              },
+              {
+                "direction": 1,
+                "endOffset": 35.65625,
+                "startOffset": 35.25,
+              },
+              {
+                "direction": 3,
+                "endOffset": 37,
+                "startOffset": 36.5,
+              },
+              {
+                "direction": 2,
+                "endOffset": 37.625,
+                "startOffset": 37.25,
+              },
+              {
+                "direction": 2,
+                "endOffset": 37.9375,
+                "startOffset": 37.5,
+              },
+              {
+                "direction": 3,
+                "endOffset": 40,
+                "startOffset": 39.5,
+              },
+              {
+                "direction": 2,
+                "endOffset": 40.25,
+                "startOffset": 39.75,
+              },
+              {
+                "direction": 1,
+                "endOffset": 40.375,
+                "startOffset": 40,
+              },
+              {
+                "direction": 0,
+                "endOffset": 40.5,
+                "startOffset": 40.125,
+              },
+              {
+                "direction": 2,
+                "endOffset": 40.625,
+                "startOffset": 40.25,
+              },
+              {
+                "direction": 3,
+                "endOffset": 40.9375,
+                "startOffset": 40.5,
+              },
+              {
+                "direction": 3,
+                "endOffset": 42.9375,
+                "startOffset": 42.5,
+              },
+              {
+                "direction": 3,
+                "endOffset": 45.916666666666664,
+                "startOffset": 45.5,
+              },
+              {
+                "direction": 3,
+                "endOffset": 46.75,
+                "startOffset": 46.375,
+              },
+              {
+                "direction": 1,
+                "endOffset": 47.5,
+                "startOffset": 47.125,
+              },
+              {
+                "direction": 0,
+                "endOffset": 49.5,
+                "startOffset": 49,
+              },
+            ],
+            "stops": [],
+          },
+        },
+        "displayBpm": "50-100",
+        "maxBpm": 100,
+        "minBpm": 17,
+        "stopCount": 0,
+        "title": {
+          "banner": "fracture-bn.png",
+          "bg": "fracture-bg.png",
+          "jacket": "",
+          "titleDir": "BITE6 ITG Customs/[T11] Fracture Ray",
+          "titleName": "[T11] Fracture Ray",
+          "translitTitleName": null,
+        },
+      }
+    `);
+  });
 });

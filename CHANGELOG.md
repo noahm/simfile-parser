@@ -5,6 +5,7 @@
 - **BREAKING** switched package output to pure ESM
 - Removed dependency on 'fraction.js'
 - Fix parsing BPMs when broken across multiple lines
+- Parse display bpms to a better display format
 
 ## v0.5.0
 
