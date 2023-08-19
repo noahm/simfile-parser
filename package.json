@@ -1,6 +1,6 @@
 {
   "name": "simfile-parser",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Read stepmania charts with javascript!",
   "type": "module",
   "main": "./dist/main.js",

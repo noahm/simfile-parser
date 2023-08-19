@@ -6,6 +6,7 @@ build
 package-lock.json
 .editorconfig
 .nvmrc
+.yarn
 Makefile
 .eslintrc.js
 tsconfig.json

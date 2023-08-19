@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.6.1
+
+- Avoid publishing yarn cache in published tarball
+
 ## v0.6.0
 
 - **BREAKING** switched package output to pure ESM
