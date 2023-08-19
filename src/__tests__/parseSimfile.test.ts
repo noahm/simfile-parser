@@ -2806,4 +2806,321 @@ describe("parseSong", () => {
       }
     `);
   });
+
+  test("modern varied bpm song", () => {
+    const simfile = parseSong(
+      path.join(packsRoot, "BITE6 ITG Customs", "[T10] Neutrino")
+    )!;
+    scrubDataForSnapshot(simfile);
+    expect(simfile).toMatchInlineSnapshot(`
+      {
+        "artist": "HuΣeR",
+        "availableTypes": [
+          {
+            "difficulty": "challenge",
+            "feet": 14,
+            "mode": "single",
+            "slug": "single-challenge",
+          },
+        ],
+        "charts": {
+          "single-challenge": {
+            "arrows": "REDACTED",
+            "bpm": [
+              {
+                "bpm": 150,
+                "endOffset": 32,
+                "startOffset": 0,
+              },
+              {
+                "bpm": 205,
+                "endOffset": null,
+                "startOffset": 32,
+              },
+            ],
+            "freezes": [
+              {
+                "direction": 0,
+                "endOffset": 8.75,
+                "startOffset": 8,
+              },
+              {
+                "direction": 2,
+                "endOffset": 9.25,
+                "startOffset": 8.53125,
+              },
+              {
+                "direction": 1,
+                "endOffset": 9.875,
+                "startOffset": 9,
+              },
+              {
+                "direction": 0,
+                "endOffset": 10.125,
+                "startOffset": 9.75,
+              },
+              {
+                "direction": 3,
+                "endOffset": 10.25,
+                "startOffset": 9.875,
+              },
+              {
+                "direction": 2,
+                "endOffset": 10.5,
+                "startOffset": 10.03125,
+              },
+              {
+                "direction": 1,
+                "endOffset": 10.75,
+                "startOffset": 10.25,
+              },
+              {
+                "direction": 0,
+                "endOffset": 11,
+                "startOffset": 10.53125,
+              },
+              {
+                "direction": 1,
+                "endOffset": 11.25,
+                "startOffset": 10.75,
+              },
+              {
+                "direction": 2,
+                "endOffset": 11.5,
+                "startOffset": 11,
+              },
+              {
+                "direction": 0,
+                "endOffset": 11.75,
+                "startOffset": 11.28125,
+              },
+              {
+                "direction": 2,
+                "endOffset": 12,
+                "startOffset": 11.5,
+              },
+              {
+                "direction": 0,
+                "endOffset": 12.75,
+                "startOffset": 12,
+              },
+              {
+                "direction": 2,
+                "endOffset": 13.25,
+                "startOffset": 12.53125,
+              },
+              {
+                "direction": 1,
+                "endOffset": 13.875,
+                "startOffset": 13,
+              },
+              {
+                "direction": 0,
+                "endOffset": 14.5,
+                "startOffset": 14,
+              },
+              {
+                "direction": 2,
+                "endOffset": 14.75,
+                "startOffset": 14.25,
+              },
+              {
+                "direction": 3,
+                "endOffset": 15,
+                "startOffset": 14.53125,
+              },
+              {
+                "direction": 0,
+                "endOffset": 15.25,
+                "startOffset": 14.75,
+              },
+              {
+                "direction": 0,
+                "endOffset": 16.5,
+                "startOffset": 16,
+              },
+              {
+                "direction": 3,
+                "endOffset": 17,
+                "startOffset": 16.5,
+              },
+              {
+                "direction": 2,
+                "endOffset": 17.75,
+                "startOffset": 17.25,
+              },
+              {
+                "direction": 1,
+                "endOffset": 19.875,
+                "startOffset": 19.5,
+              },
+              {
+                "direction": 2,
+                "endOffset": 20,
+                "startOffset": 19.625,
+              },
+              {
+                "direction": 3,
+                "endOffset": 21,
+                "startOffset": 20.5,
+              },
+              {
+                "direction": 0,
+                "endOffset": 21.5,
+                "startOffset": 21,
+              },
+              {
+                "direction": 1,
+                "endOffset": 21.75,
+                "startOffset": 21.25,
+              },
+              {
+                "direction": 2,
+                "endOffset": 22.5,
+                "startOffset": 22.03125,
+              },
+              {
+                "direction": 1,
+                "endOffset": 22.75,
+                "startOffset": 22.25,
+              },
+              {
+                "direction": 0,
+                "endOffset": 23,
+                "startOffset": 22.53125,
+              },
+              {
+                "direction": 1,
+                "endOffset": 23.25,
+                "startOffset": 22.75,
+              },
+              {
+                "direction": 0,
+                "endOffset": 23.875,
+                "startOffset": 23.5,
+              },
+              {
+                "direction": 2,
+                "endOffset": 24.125,
+                "startOffset": 23.75,
+              },
+              {
+                "direction": 1,
+                "endOffset": 24.25,
+                "startOffset": 23.875,
+              },
+              {
+                "direction": 3,
+                "endOffset": 25.75,
+                "startOffset": 25.25,
+              },
+              {
+                "direction": 0,
+                "endOffset": 28.09375,
+                "startOffset": 27.75,
+              },
+              {
+                "direction": 0,
+                "endOffset": 28.21875,
+                "startOffset": 27.875,
+              },
+              {
+                "direction": 2,
+                "endOffset": 29,
+                "startOffset": 28.5,
+              },
+              {
+                "direction": 2,
+                "endOffset": 30.5,
+                "startOffset": 30.03125,
+              },
+              {
+                "direction": 3,
+                "endOffset": 30.75,
+                "startOffset": 30.25,
+              },
+              {
+                "direction": 2,
+                "endOffset": 31,
+                "startOffset": 30.53125,
+              },
+              {
+                "direction": 1,
+                "endOffset": 31.25,
+                "startOffset": 30.75,
+              },
+              {
+                "direction": 2,
+                "endOffset": 31.875,
+                "startOffset": 31.5,
+              },
+              {
+                "direction": 3,
+                "endOffset": 32.125,
+                "startOffset": 31.75,
+              },
+              {
+                "direction": 0,
+                "endOffset": 32.208333333333336,
+                "startOffset": 31.875,
+              },
+              {
+                "direction": 0,
+                "endOffset": 40.125,
+                "startOffset": 39.75,
+              },
+              {
+                "direction": 3,
+                "endOffset": 40.25,
+                "startOffset": 39.875,
+              },
+              {
+                "direction": 0,
+                "endOffset": 48.25,
+                "startOffset": 47.5,
+              },
+              {
+                "direction": 3,
+                "endOffset": 55.875,
+                "startOffset": 55.5,
+              },
+              {
+                "direction": 0,
+                "endOffset": 56,
+                "startOffset": 55.625,
+              },
+              {
+                "direction": 2,
+                "endOffset": 56.125,
+                "startOffset": 55.75,
+              },
+              {
+                "direction": 1,
+                "endOffset": 56.25,
+                "startOffset": 55.875,
+              },
+              {
+                "direction": 3,
+                "endOffset": 64.25,
+                "startOffset": 63.75,
+              },
+            ],
+            "stops": [],
+          },
+        },
+        "displayBpm": "150-205",
+        "maxBpm": 205,
+        "minBpm": 150,
+        "stopCount": 0,
+        "title": {
+          "banner": "bn.png",
+          "bg": "bg.png",
+          "jacket": "",
+          "titleDir": "BITE6 ITG Customs/[T10] Neutrino",
+          "titleName": "[T10] Neutrino",
+          "translitTitleName": null,
+        },
+      }
+    `);
+  });
 });

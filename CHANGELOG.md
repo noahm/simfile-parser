@@ -2,8 +2,9 @@
 
 ## Unreleased
 
-- Switched package output to pure ESM
+- **BREAKING** switched package output to pure ESM
 - Removed dependency on 'fraction.js'
+- Fix parsing BPMs when broken across multiple lines
 
 ## v0.5.0
 

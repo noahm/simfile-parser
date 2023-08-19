@@ -407,6 +407,13 @@ export function parseSsc(ssc: string): RawSimfile {
         sc.displayBpm = value.replace(":", "-");
       } else if (tag === "bpms") {
         bpmString = value;
+        // continue reading lines if BPM changes happen to be broken down into multiple lines
+        let bpmLine = line;
+        while (!bpmLine.endsWith(";")) {
+          index += 1;
+          bpmLine = lines[index];
+          bpmString += bpmLine.split(";")[0];
+        }
       } else if (tag === "stops") {
         stopsString = value;
       } else if (tag === "notedata") {
