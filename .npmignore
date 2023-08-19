@@ -8,7 +8,7 @@ package-lock.json
 .nvmrc
 .yarn
 Makefile
-.eslintrc.js
+.eslintrc.cjs
 tsconfig.json
 *.sh
 .scripts
