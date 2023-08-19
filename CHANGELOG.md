@@ -7,7 +7,7 @@
 
 ## v0.5.0
 
-- ** BREAKING ** drop support for Node 14
+- **BREAKING** drop support for Node 14
 - Fixed non-song folders in packs causing fatal errors
 
 ## v0.4.1
