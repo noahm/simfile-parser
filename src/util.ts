@@ -1,6 +1,6 @@
 import Fraction from "fraction.js";
 import { Images } from "./parseSong";
-import { Arrow, BpmChange, Difficulty } from "./types";
+import { Step, BpmChange, Difficulty } from "./types";
 
 const beats = [
   new Fraction(1).div(4),
@@ -17,7 +17,7 @@ const beats = [
  * @param offset fractional
  * @returns number indicating the quantization color
  */
-export function determineBeat(offset: Fraction): Arrow["quantization"] {
+export function determineBeat(offset: Fraction): Step["quantization"] {
   const match = beats.find((b) => offset.mod(b).n === 0);
 
   if (!match) {
@@ -26,7 +26,7 @@ export function determineBeat(offset: Fraction): Arrow["quantization"] {
     return 64;
   }
 
-  return match.d as Arrow["quantization"];
+  return match.d as Step["quantization"];
 }
 
 export const normalizedDifficultyMap: Record<string, Difficulty> = {

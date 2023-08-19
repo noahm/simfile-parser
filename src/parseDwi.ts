@@ -8,23 +8,23 @@ import {
   printMaybeError,
   reportError,
 } from "./util";
-import { Arrow, FreezeLocation, BpmChange } from "./types";
+import { Step, ExtendedStep, BpmChange } from "./types";
 
 // eslint-disable-next-line jsdoc/require-jsdoc
 function isMetaTag(tag: string): tag is "title" | "artist" {
   return ["title", "artist"].includes(tag);
 }
 
-const dwiToSMDirection: Record<string, Arrow["direction"]> = {
-  0: "0000",
-  1: "1100", // down-left
-  2: "0100", // down
-  3: "0101", // down-right
-  4: "1000", // left
-  6: "0001", // right
-  7: "1010", // up-left
-  8: "0010", // up
-  9: "0011", // up-right
+const dwiToSMDirection: Record<string, string> = {
+  "0": "0000",
+  "1": "1100", // down-left
+  "2": "0100", // down
+  "3": "0101", // down-right
+  "4": "1000", // left
+  "6": "0001", // right
+  "7": "1010", // up-left
+  "8": "0010", // up
+  "9": "0011", // up-right
   A: "0110", // up-down jump
   B: "1001", // left-right jump
 };
@@ -37,8 +37,7 @@ const smToDwiDirection = Object.entries(dwiToSMDirection).reduce<
 }, {});
 
 type ArrowParseResult = {
-  arrows: Arrow[];
-  freezes: FreezeLocation[];
+  arrows: Step[];
 };
 
 /**
@@ -51,11 +50,15 @@ function combinePadsIntoOneStream(
   p1: ArrowParseResult,
   p2: ArrowParseResult
 ): ArrowParseResult {
-  const arrows = p1.arrows
-    .concat(p2.arrows)
-    .sort((a, b) => a.offset - b.offset);
+  const p2Arrows = p2.arrows.map((s) => {
+    return {
+      ...s,
+      direction: s.direction + 4,
+    };
+  });
+  const arrows = p1.arrows.concat(p2Arrows).sort((a, b) => a.offset - b.offset);
 
-  const combinedArrows = arrows.reduce<Arrow[]>((building, arrow, i, rest) => {
+  const combinedArrows = arrows.reduce<Step[]>((building, arrow, i, rest) => {
     const prevArrow = rest[i - 1];
 
     // since previous offset matches, the previous one already
@@ -70,31 +73,20 @@ function combinePadsIntoOneStream(
       return building.concat({
         ...arrow,
         direction: arrow.direction + nextArrow.direction,
-      } as Arrow);
+      } as Step);
     }
 
-    return building.concat({
+    const step: Step = {
       ...arrow,
       direction: p1.arrows.includes(arrow)
         ? `${arrow.direction}0000`
         : `0000${arrow.direction}`,
-    } as Arrow);
+    };
+    return building.concat(step);
   }, []);
-
-  const bumpedP2Freezes = p2.freezes.map((f) => {
-    return {
-      ...f,
-      direction: f.direction + 4,
-    } as FreezeLocation;
-  });
-
-  const freezes = p1.freezes
-    .concat(bumpedP2Freezes)
-    .sort((a, b) => a.startOffset - b.startOffset);
 
   return {
     arrows: combinedArrows,
-    freezes,
   };
 }
 
@@ -131,13 +123,13 @@ function parseArrowStream(
   notes: string,
   firstNonEmptyMeasureIndex: number
 ): ArrowParseResult {
-  const arrows: Arrow[] = [];
-  const freezes: FreezeLocation[] = [];
+  const arrows: Step[] = [];
+  const freezes: ExtendedStep[] = [];
 
   const currentFreezeDirections: string[] = [];
   const openFreezes: Record<
-    FreezeLocation["direction"],
-    Partial<FreezeLocation> | null
+    ExtendedStep["direction"],
+    Partial<ExtendedStep> | null
   > = {
     0: null,
     1: null,
@@ -169,17 +161,17 @@ function parseArrowStream(
       for (let d = 0; d < smDirection.length; ++d) {
         if (
           smDirection[d] === "1" &&
-          openFreezes[d as FreezeLocation["direction"]]
+          openFreezes[d as ExtendedStep["direction"]]
         ) {
-          const of = openFreezes[d as FreezeLocation["direction"]];
+          const of = openFreezes[d as ExtendedStep["direction"]];
           if (!of) {
             reportError(
               "error parsing dwi freezes, tried to close a freeze that never opened"
             );
           } else {
             of.endOffset = curOffset.n / curOffset.d + 0.25;
-            freezes.push(of as FreezeLocation);
-            openFreezes[d as FreezeLocation["direction"]] = null;
+            freezes.push(of as ExtendedStep);
+            openFreezes[d as ExtendedStep["direction"]] = null;
             smDirectionSplit[d] = "0";
           }
         }
@@ -199,8 +191,8 @@ function parseArrowStream(
 
       for (let d = 0; d < smDirection.length; ++d) {
         if (smDirection[d] === "1") {
-          openFreezes[d as FreezeLocation["direction"]] = {
-            direction: d as FreezeLocation["direction"],
+          openFreezes[d as ExtendedStep["direction"]] = {
+            direction: d as ExtendedStep["direction"],
             startOffset: curOffset.n / curOffset.d,
           };
         }
@@ -211,7 +203,7 @@ function parseArrowStream(
         direction: dwiToSMDirection[note].replace(
           /1/g,
           "2"
-        ) as Arrow["direction"],
+        ) as Step["direction"],
         quantization: determineBeat(curOffset),
         offset: curOffset.n / curOffset.d,
       });

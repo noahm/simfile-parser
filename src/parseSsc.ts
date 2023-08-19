@@ -1,6 +1,16 @@
 import Fraction from "fraction.js";
+import { Heaps } from "./data-structures/heaps";
 import { RawSimfile } from "./parseSong";
-import { FreezeLocation, Arrow, StepchartType, Stepchart, Mode } from "./types";
+import {
+  ExtendedStep,
+  Step,
+  StepchartType,
+  Stepchart,
+  Mode,
+  FreezeType,
+  StepType,
+  BeatOffset,
+} from "./types";
 import {
   determineBeat,
   mergeSimilarBpmRanges,
@@ -25,6 +35,29 @@ const chartTagsToConsume = ["stepstype", "difficulty", "meter"];
 type ChartInProgress = Partial<StepchartType> & {
   chart?: Stepchart;
 };
+
+// eslint-disable-next-line jsdoc/require-jsdoc
+function getStepType(notation: "1" | "M" | "L"): StepType {
+  switch (notation) {
+    case "1":
+      return "tap";
+    case "M":
+      return "mine";
+    case "L":
+      return "lift";
+  }
+}
+// eslint-disable-next-line jsdoc/require-jsdoc
+function getFreezeType(notation: "2" | "4" | "DM"): FreezeType {
+  switch (notation) {
+    case "2":
+      return "freeze";
+    case "4":
+      return "roll";
+    case "DM":
+      return "minepit";
+  }
+}
 
 /**
  * does a given line count as the end of a notes tag/block?
@@ -182,93 +215,21 @@ export function parseSsc(ssc: string): RawSimfile {
   }
 
   /**
-   * @param lines all lines in this file
-   * @param i current line
-   * @param mode chart's gameplay mode, for reporting only
-   * @param difficulty chart's difficulty category, for reporting only
-   * @returns array of parsed freeze note locations
-   */
-  function parseFreezes(
-    lines: string[],
-    i: number,
-    mode: string,
-    difficulty: string
-  ): FreezeLocation[] {
-    const freezes: FreezeLocation[] = [];
-    const open: Record<number, Partial<FreezeLocation> | undefined> = {};
-
-    let curOffset = new Fraction(0);
-    let curMeasureFraction = new Fraction(1).div(
-      getMeasureLength(lines, i) || 1
-    );
-
-    for (; i < lines.length && !concludesANoteTag(lines[i]); ++i) {
-      const line = lines[i];
-
-      if (line.trim() === "") {
-        continue;
-      }
-
-      if (line[0] === ",") {
-        curMeasureFraction = new Fraction(1).div(
-          getMeasureLength(lines, i + 1) || 1
-        );
-        continue;
-      }
-
-      if (
-        line.indexOf("2") === -1 &&
-        line.indexOf("3") === -1 &&
-        line.indexOf("4") === -1
-      ) {
-        curOffset = curOffset.add(curMeasureFraction);
-        continue;
-      }
-
-      const cleanedLine = line.replace(/[^234]/g, "0");
-
-      for (let d = 0; d < cleanedLine.length; ++d) {
-        if (cleanedLine[d] === "2" || cleanedLine[d] === "4") {
-          if (open[d]) {
-            reportError(
-              `${sc.title}, ${mode}, ${difficulty} -- error parsing freezes, found a new starting freeze before a previous one finished`
-            );
-          } else {
-            const startBeatFraction = curOffset;
-            open[d] = {
-              direction: d as FreezeLocation["direction"],
-              startOffset: startBeatFraction.n / startBeatFraction.d,
-            };
-          }
-        } else if (cleanedLine[d] === "3") {
-          const thisFreeze = open[d];
-          if (!thisFreeze) {
-            reportError(
-              `${sc.title}, ${mode}, ${difficulty} -- error parsing freezes, tried to close a freeze that never opened`
-            );
-          } else {
-            const endBeatFraction = curOffset.add(new Fraction(1).div(4));
-            thisFreeze.endOffset = endBeatFraction.n / endBeatFraction.d;
-            freezes.push(thisFreeze as FreezeLocation);
-            open[d] = undefined;
-          }
-        }
-      }
-
-      curOffset = curOffset.add(curMeasureFraction);
-    }
-
-    return freezes;
-  }
-
-  /**
    * Parse notes info for a chart
    * @param lines all lines of current file
    * @param i current line
    * @param bpmString string of bpm changes for this chart
+   * @param mode chart's gameplay mode, for reporting only
+   * @param difficulty chart's difficulty category, for reporting only
    * @returns number of lines parsed
    */
-  function parseNotes(lines: string[], i: number, bpmString: string): number {
+  function parseNotes(
+    lines: string[],
+    i: number,
+    bpmString: string,
+    mode?: string,
+    difficulty?: string
+  ): number {
     if (!currentChart || !currentChart.mode || !currentChart.difficulty) {
       throw new Error(
         "parseSsc: Can't parse notes before mode and difficulty are ready"
@@ -276,9 +237,10 @@ export function parseSsc(ssc: string): RawSimfile {
     }
     // move past #NOTES into the note metadata
     i++;
-
     // now i is pointing at the first measure
-    const arrows: Arrow[] = [];
+
+    const steps = new Heaps<number, Step>();
+    const openExtendedSteps = new Map<number, ExtendedStep | undefined>();
 
     const { firstNonEmptyMeasureIndex, numMeasuresSkipped } =
       findFirstNonEmptyMeasure(currentChart.mode, lines, i);
@@ -308,27 +270,93 @@ export function parseSsc(ssc: string): RawSimfile {
         continue;
       }
 
-      if (!isRest(line)) {
-        arrows.push({
-          quantization: determineBeat(curOffset),
-          offset: curOffset.n / curOffset.d,
-          direction: line as Arrow["direction"],
-        });
+      const quantization = determineBeat(curOffset);
+
+      let direction = 0;
+      for (let d = 0; d < line.length; ++d, direction++) {
+        let notation = line[d];
+        if (notation === "D") {
+          // read next character into notation, for DM (minepit head) or DL (hold tail with lift)
+          notation += line[++d];
+        }
+        // skip over attacks
+        if (notation === "{") {
+          d = notation.indexOf("}", d);
+          if (d < 0) {
+            throw new Error("malformed attack syntax");
+          }
+          notation = line[++d];
+        }
+        // skip over keysounds
+        if (notation === "[") {
+          d = notation.indexOf("]", d);
+          if (d < 0) {
+            throw new Error("malformed keysound syntax");
+          }
+          notation = line[++d];
+        }
+
+        const currentOffset = curOffset.n / curOffset.d;
+
+        switch (notation) {
+          case "1":
+          case "M":
+          case "L":
+            steps.add(currentOffset, {
+              type: getStepType(notation),
+              quantization,
+              offset: currentOffset,
+              direction,
+            });
+            break;
+          case "2":
+          case "4":
+          case "DM": {
+            if (openExtendedSteps.has(d)) {
+              reportError(
+                `${sc.title}, ${mode}, ${difficulty} -- error parsing freezes, found a new starting freeze before a previous one finished`
+              );
+            } else {
+              openExtendedSteps.set(d, {
+                quantization,
+                type: getFreezeType(notation),
+                direction,
+                offset: curOffset.n / curOffset.d,
+                endOffset: 0, // TBD
+              });
+            }
+            break;
+          }
+          case "DL":
+          case "3": {
+            const thisFreeze = openExtendedSteps.get(d);
+            if (!thisFreeze) {
+              reportError(
+                `${sc.title}, ${mode}, ${difficulty} -- error parsing freezes at offset ${i}, tried to close a freeze that never opened`
+              );
+            } else {
+              const endBeatFraction = curOffset.add(new Fraction(1).div(4));
+              thisFreeze.endOffset = endBeatFraction.n / endBeatFraction.d;
+              steps.add(thisFreeze.offset, thisFreeze);
+              openExtendedSteps.delete(d);
+            }
+            break;
+          }
+        }
       }
 
       curOffset = curOffset.add(curMeasureFraction);
     }
 
-    const freezes = parseFreezes(
-      lines,
-      firstMeasureIndex,
-      currentChart.mode,
-      currentChart.difficulty
-    );
+    const beats = Array.from(steps.entries())
+      .map<BeatOffset>(([offset, steps]) => ({
+        offset,
+        steps,
+      }))
+      .sort((a, b) => a.offset - b.offset);
 
     currentChart.chart = {
-      arrows,
-      freezes,
+      beats,
       bpm: parseBpms(bpmString, numMeasuresSkipped),
       stops: parseStops(stopsString, numMeasuresSkipped),
     };
@@ -411,7 +439,13 @@ export function parseSsc(ssc: string): RawSimfile {
         if (!bpmString) {
           throw new Error("parseSsc: about to parse notes but never got bpm");
         }
-        return parseNotes(lines, index, bpmString);
+        return parseNotes(
+          lines,
+          index,
+          bpmString,
+          currentChart?.mode,
+          currentChart?.difficulty
+        );
       }
     }
 

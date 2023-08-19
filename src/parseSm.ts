@@ -1,6 +1,6 @@
 import Fraction from "fraction.js";
 import { RawSimfile } from "./parseSong";
-import { FreezeLocation, Arrow } from "./types";
+import { ExtendedStep, Step } from "./types";
 import {
   determineBeat,
   mergeSimilarBpmRanges,
@@ -188,9 +188,9 @@ export function parseSm(sm: string): RawSimfile {
     i: number,
     mode: string,
     difficulty: string
-  ): FreezeLocation[] {
-    const freezes: FreezeLocation[] = [];
-    const open: Record<number, Partial<FreezeLocation> | undefined> = {};
+  ): ExtendedStep[] {
+    const freezes: ExtendedStep[] = [];
+    const open: Record<number, Partial<ExtendedStep> | undefined> = {};
 
     let curOffset = new Fraction(0);
     let curMeasureFraction = new Fraction(1).div(
@@ -231,7 +231,7 @@ export function parseSm(sm: string): RawSimfile {
           } else {
             const startBeatFraction = curOffset;
             open[d] = {
-              direction: d as FreezeLocation["direction"],
+              direction: d as ExtendedStep["direction"],
               startOffset: startBeatFraction.n / startBeatFraction.d,
             };
           }
@@ -244,7 +244,7 @@ export function parseSm(sm: string): RawSimfile {
           } else {
             const endBeatFraction = curOffset.add(new Fraction(1).div(4));
             thisFreeze.endOffset = endBeatFraction.n / endBeatFraction.d;
-            freezes.push(thisFreeze as FreezeLocation);
+            freezes.push(thisFreeze as ExtendedStep);
             open[d] = undefined;
           }
         }
@@ -279,7 +279,7 @@ export function parseSm(sm: string): RawSimfile {
     }
 
     // now i is pointing at the first measure
-    const arrows: Arrow[] = [];
+    const arrows: Step[] = [];
 
     const { firstNonEmptyMeasureIndex, numMeasuresSkipped } =
       findFirstNonEmptyMeasure(mode, lines, i);
@@ -313,7 +313,7 @@ export function parseSm(sm: string): RawSimfile {
         arrows.push({
           quantization: determineBeat(curOffset),
           offset: curOffset.n / curOffset.d,
-          direction: line as Arrow["direction"],
+          direction: line as Step["direction"],
         });
       }
 
