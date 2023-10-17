@@ -1,14 +1,13 @@
-import fs from "node:fs";
-import { Fraction } from "./fraction.js";
-import { RawSimfile } from "./parseSong.js";
+import { Fraction } from "../fraction.js";
+import { RawSimfile } from "./types.js";
 import {
   determineBeat,
   mergeSimilarBpmRanges,
   normalizedDifficultyMap,
   printMaybeError,
   reportError,
-} from "./util.js";
-import { Arrow, FreezeLocation, BpmChange } from "./types.js";
+} from "../util.js";
+import { Arrow, FreezeLocation, BpmChange } from "../types.js";
 
 // eslint-disable-next-line jsdoc/require-jsdoc
 function isMetaTag(tag: string): tag is "title" | "artist" {
@@ -253,20 +252,6 @@ function parseArrowStream(
 }
 
 /**
- * @param titlePath path to song dir
- * @returns filename of banner, if found
- */
-function findBanner(titlePath: string): string | null {
-  const files = fs.readdirSync(titlePath);
-
-  const bannerFile = files.find(
-    (f) => f.endsWith(".png") && !f.endsWith("-bg.png")
-  );
-
-  return bannerFile ?? null;
-}
-
-/**
  * parse a DWI file
  * @param dwi entire contents of the file
  * @param titlePath path to song directory, for image discovery
@@ -287,7 +272,7 @@ export function parseDwi(dwi: string, titlePath?: string): RawSimfile {
     charts: {},
     availableTypes: [],
     images: {
-      banner: titlePath ? findBanner(titlePath) : null,
+      banner: null,
       bg: null,
       jacket: null,
     },

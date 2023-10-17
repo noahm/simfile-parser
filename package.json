@@ -1,10 +1,10 @@
 {
   "name": "simfile-parser",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "description": "Read stepmania charts with javascript!",
   "type": "module",
   "main": "./dist/main.js",
-  "browser": "./dist/browser.js",
+  "browser": "./dist/browser/index.js",
   "types": "./dist/main.d.ts",
   "bin": "./dist/cli.js",
   "sideEffects": "false",
@@ -57,6 +57,7 @@
   "devDependencies": {
     "@types/jest": "^29.5.3",
     "@types/node": "^20.4.2",
+    "@types/wicg-file-system-access": "^2023.10.1",
     "@typescript-eslint/eslint-plugin": "^6.6.0",
     "@typescript-eslint/parser": "^6.6.0",
     "confusing-browser-globals": "^1.0.11",
@@ -69,6 +70,9 @@
     "prettier": "^2.8.8",
     "ts-jest": "^29.1.1",
     "typescript": "^5.2.2"
+  },
+  "peerDependencies": {
+    "@types/wicg-file-system-access": "*"
   },
   "resolutions": {
     "semver": "^7.5.2"

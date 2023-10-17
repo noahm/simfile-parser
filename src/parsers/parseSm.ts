@@ -1,6 +1,6 @@
-import { Fraction } from "./fraction.js";
-import { RawSimfile } from "./parseSong.js";
-import { FreezeLocation, Arrow } from "./types.js";
+import { Fraction } from "../fraction.js";
+import { RawSimfile } from "./types.js";
+import { FreezeLocation, Arrow } from "../types.js";
 import {
   determineBeat,
   mergeSimilarBpmRanges,
@@ -8,7 +8,7 @@ import {
   printMaybeError,
   renameBackground,
   reportError,
-} from "./util.js";
+} from "../util.js";
 
 // Ref: https://github.com/stepmania/stepmania/wiki/sm
 

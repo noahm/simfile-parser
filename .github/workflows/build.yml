@@ -20,7 +20,7 @@ jobs:
           cache: "yarn"
 
       - name: Init project
-        run: yarn --frozen-lockfile
+        run: yarn --immutable
 
       - name: Webpack Build
         run: yarn build

@@ -1,12 +1,12 @@
-import { Fraction } from "./fraction.js";
-import { RawSimfile } from "./parseSong.js";
+import { Fraction } from "../fraction.js";
+import { RawSimfile } from "./types.js";
 import {
   FreezeLocation,
   Arrow,
   StepchartType,
   Stepchart,
   Mode,
-} from "./types.js";
+} from "../types.js";
 import {
   determineBeat,
   mergeSimilarBpmRanges,
@@ -14,7 +14,7 @@ import {
   printMaybeError,
   renameBackground,
   reportError,
-} from "./util.js";
+} from "../util.js";
 
 // Ref: https://github.com/stepmania/stepmania/wiki/ssc
 

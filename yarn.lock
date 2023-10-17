@@ -1037,6 +1037,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/wicg-file-system-access@npm:^2023.10.1":
+  version: 2023.10.1
+  resolution: "@types/wicg-file-system-access@npm:2023.10.1"
+  checksum: 2b91ec8657a1f773c2bca40e48a19f8f8e0ebb26b882dc82ea4814cc84b9d224872fd178aa6a7462c743f32d1971727314bc56313a88b516b0e40167d6dbc8b2
+  languageName: node
+  linkType: hard
+
 "@types/yargs-parser@npm:*":
   version: 21.0.0
   resolution: "@types/yargs-parser@npm:21.0.0"
@@ -4318,6 +4325,7 @@ __metadata:
   dependencies:
     "@types/jest": ^29.5.3
     "@types/node": ^20.4.2
+    "@types/wicg-file-system-access": ^2023.10.1
     "@typescript-eslint/eslint-plugin": ^6.6.0
     "@typescript-eslint/parser": ^6.6.0
     confusing-browser-globals: ^1.0.11
@@ -4330,6 +4338,8 @@ __metadata:
     prettier: ^2.8.8
     ts-jest: ^29.1.1
     typescript: ^5.2.2
+  peerDependencies:
+    "@types/wicg-file-system-access": "*"
   bin:
     simfile-parser: ./dist/cli.js
   languageName: unknown

@@ -1,5 +1,5 @@
 import { Fraction } from "./fraction.js";
-import { Images } from "./parseSong.js";
+import { ParsedImages } from "./parsers/types.js";
 import { Arrow, BpmChange, Difficulty } from "./types.js";
 
 const beats = [
@@ -87,7 +87,9 @@ export function mergeSimilarBpmRanges(bpm: BpmChange[]): BpmChange[] {
  * if we found a `background` tag, rename it to `bg`
  * @param images image data
  */
-export function renameBackground(images: Images & { background?: string }) {
+export function renameBackground(
+  images: ParsedImages & { background?: string }
+) {
   if (typeof images.background !== "undefined") {
     if (images.background) {
       images.bg = images.background;
