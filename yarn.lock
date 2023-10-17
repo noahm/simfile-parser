@@ -4338,8 +4338,6 @@ __metadata:
     prettier: ^2.8.8
     ts-jest: ^29.1.1
     typescript: ^5.2.2
-  peerDependencies:
-    "@types/wicg-file-system-access": "*"
   bin:
     simfile-parser: ./dist/cli.js
   languageName: unknown
