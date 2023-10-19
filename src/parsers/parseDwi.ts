@@ -4,7 +4,6 @@ import {
   determineBeat,
   mergeSimilarBpmRanges,
   normalizedDifficultyMap,
-  printMaybeError,
   reportError,
 } from "../util.js";
 import { Arrow, FreezeLocation, BpmChange } from "../types.js";
@@ -453,6 +452,6 @@ export function parseDwi(dwi: string, titlePath?: string): RawSimfile {
 
     return sc as RawSimfile;
   } catch (e) {
-    throw new Error(`error parsing ${dwi}\n${printMaybeError(e)}`);
+    throw new Error(`error parsing ${dwi}`, { cause: e });
   }
 }

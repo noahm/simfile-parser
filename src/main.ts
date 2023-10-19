@@ -2,7 +2,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { parseSong } from "./parseSong.js";
 import { Pack, Simfile } from "./types.js";
-import { printMaybeError, reportError } from "./util.js";
+import { reportError } from "./util.js";
 
 export * from "./types.js";
 export * from "./parseSong.js";
@@ -65,9 +65,7 @@ export function parsePack(dir: string): PackWithSongs {
         });
       }
     } catch (e) {
-      reportError(
-        `parseStepchart failed for '${songFolder}': ${printMaybeError(e)}`
-      );
+      reportError(`parseStepchart failed for '${songFolder}'`, e);
     }
   });
 

@@ -5,7 +5,6 @@ import {
   determineBeat,
   mergeSimilarBpmRanges,
   normalizedDifficultyMap,
-  printMaybeError,
   renameBackground,
   reportError,
 } from "../util.js";
@@ -392,8 +391,6 @@ export function parseSm(sm: string): RawSimfile {
     renameBackground(sc.images);
     return sc as RawSimfile;
   } catch (e) {
-    throw new Error(
-      `error parsing ${sm.substring(0, 300)}\n${printMaybeError(e)}`
-    );
+    throw new Error(`error parsing ${sm.substring(0, 300)}`, { cause: e });
   }
 }

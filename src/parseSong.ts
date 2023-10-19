@@ -74,7 +74,7 @@ function getBpms(sm: Pick<RawSimfile, "charts">): number[] {
  * @param songDirPath path to song folder (contains a chart definition file [dwi/sm], images, etc)
  * @returns a simfile object without mix info or null if no sm/ssc file was found
  */
-export function parseSong(songDirPath: string): Omit<Simfile, "mix"> | null {
+export function parseSong(songDirPath: string): Simfile | null {
   const songFile = getSongFile(songDirPath);
   if (!songFile) {
     return null;
