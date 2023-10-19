@@ -35,6 +35,7 @@ function guessImages(songDir: string, tagged: ParsedImages) {
   let jacket = tagged.jacket;
   let bg = tagged.bg;
   let banner = tagged.banner;
+  const leftovers: string[] = [];
   for (const image of getImages(songDir)) {
     const ext = path.extname(image);
     if (
@@ -42,13 +43,28 @@ function guessImages(songDir: string, tagged: ParsedImages) {
       image.startsWith("jacket.")
     ) {
       jacket = image;
-    }
-    if ((!bg && image.endsWith("-bg" + ext)) || image.startsWith("bg.")) {
+    } else if (
+      (!bg && image.endsWith("-bg" + ext)) ||
+      image.startsWith("bg.")
+    ) {
       bg = image;
-    }
-    if ((!banner && image.endsWith("-bn" + ext)) || image.startsWith("bn.")) {
+    } else if (
+      (!banner && image.endsWith("-bn" + ext)) ||
+      image.startsWith("bn.")
+    ) {
       banner = image;
+    } else {
+      leftovers.push(image);
     }
+  }
+  if (!bg && leftovers.length) {
+    bg = leftovers.shift() || null;
+  }
+  if (!banner && leftovers.length) {
+    banner = leftovers.shift() || null;
+  }
+  if (!jacket && leftovers.length) {
+    jacket = leftovers.shift() || null;
   }
   return { jacket, bg, banner };
 }

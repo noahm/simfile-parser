@@ -175,6 +175,7 @@ async function guessImages(
   let banner: FileRef | null = tagged.banner
     ? await guardedGetByName(songDir, tagged.banner)
     : null;
+  const leftovers: FileRef[] = [];
   for await (const image of getImages(songDir)) {
     const imageName = image.name;
     const ext = extname(imageName)!;
@@ -183,19 +184,28 @@ async function guessImages(
       imageName.startsWith("jacket.")
     ) {
       jacket = image;
-    }
-    if (
+    } else if (
       (!tagged.bg && imageName.endsWith("-bg" + ext)) ||
       imageName.startsWith("bg.")
     ) {
       bg = image;
-    }
-    if (
+    } else if (
       (!tagged.bg && imageName.endsWith("-bn" + ext)) ||
       imageName.startsWith("bn.")
     ) {
       banner = image;
+    } else {
+      leftovers.push(image);
     }
+  }
+  if (!bg && leftovers.length) {
+    bg = leftovers.shift() || null;
+  }
+  if (!banner && leftovers.length) {
+    banner = leftovers.shift() || null;
+  }
+  if (!jacket && leftovers.length) {
+    jacket = leftovers.shift() || null;
   }
   return {
     jacket: jacket ? await getFileContents(jacket) : null,
