@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.7.0
+
+- Added support for in-browser parsing of entire simfile packs! Individual songs can be easily supported later. See [the readme](./README.md) for usage example.
+
 ## v0.6.1
 
 - Avoid publishing yarn cache in published tarball
