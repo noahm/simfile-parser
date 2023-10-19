@@ -1,31 +1,8 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { parseDwi } from "./parseDwi.js";
-import { parseSm } from "./parseSm.js";
-import { parseSsc } from "./parseSsc.js";
 import { Simfile } from "./types.js";
-
-export type RawSimfile = Omit<
-  Simfile,
-  "mix" | "title" | "minBpm" | "maxBpm"
-> & {
-  title: string;
-  titletranslit: string | null;
-  displayBpm: string | undefined;
-  images: Images;
-};
-export interface Images {
-  banner: string | null;
-  bg: string | null;
-  jacket: string | null;
-}
-type Parser = (simfileSource: string, titleDir: string) => RawSimfile;
-
-const parsers: Record<string, Parser> = {
-  ".sm": parseSm,
-  ".ssc": parseSsc,
-  ".dwi": parseDwi,
-};
+import { parsers, supportedExtensions } from "./parsers/index.js";
+import type { ParsedImages, RawSimfile } from "./parsers/types.js";
 
 /**
  * Find a simfile in a given directory
@@ -34,8 +11,7 @@ const parsers: Record<string, Parser> = {
  */
 function getSongFile(songDir: string) {
   const files = fs.readdirSync(songDir);
-  const extensions = Object.keys(parsers);
-  return files.find((f) => extensions.some((ext) => f.endsWith(ext)));
+  return files.find((f) => supportedExtensions.some((ext) => f.endsWith(ext)));
 }
 
 const imageExts = new Set([".png", ".jpg"]);
@@ -55,10 +31,11 @@ function getImages(songDir: string): string[] {
  * @param tagged image metadata found in simfile
  * @returns final image metadata
  */
-function guessImages(songDir: string, tagged: Images) {
+function guessImages(songDir: string, tagged: ParsedImages) {
   let jacket = tagged.jacket;
   let bg = tagged.bg;
   let banner = tagged.banner;
+  const leftovers: string[] = [];
   for (const image of getImages(songDir)) {
     const ext = path.extname(image);
     if (
@@ -66,13 +43,28 @@ function guessImages(songDir: string, tagged: Images) {
       image.startsWith("jacket.")
     ) {
       jacket = image;
-    }
-    if ((!bg && image.endsWith("-bg" + ext)) || image.startsWith("bg.")) {
+    } else if (
+      (!bg && image.endsWith("-bg" + ext)) ||
+      image.startsWith("bg.")
+    ) {
       bg = image;
-    }
-    if ((!banner && image.endsWith("-bn" + ext)) || image.startsWith("bn.")) {
+    } else if (
+      (!banner && image.endsWith("-bn" + ext)) ||
+      image.startsWith("bn.")
+    ) {
       banner = image;
+    } else {
+      leftovers.push(image);
     }
+  }
+  if (!bg && leftovers.length) {
+    bg = leftovers.shift() || null;
+  }
+  if (!banner && leftovers.length) {
+    banner = leftovers.shift() || null;
+  }
+  if (!jacket && leftovers.length) {
+    jacket = leftovers.shift() || null;
   }
   return { jacket, bg, banner };
 }
@@ -98,7 +90,7 @@ function getBpms(sm: Pick<RawSimfile, "charts">): number[] {
  * @param songDirPath path to song folder (contains a chart definition file [dwi/sm], images, etc)
  * @returns a simfile object without mix info or null if no sm/ssc file was found
  */
-export function parseSong(songDirPath: string): Omit<Simfile, "mix"> | null {
+export function parseSong(songDirPath: string): Simfile | null {
   const songFile = getSongFile(songDirPath);
   if (!songFile) {
     return null;

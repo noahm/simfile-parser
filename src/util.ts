@@ -1,5 +1,5 @@
 import { Fraction } from "./fraction.js";
-import { Images } from "./parseSong.js";
+import { ParsedImages } from "./parsers/types.js";
 import { Arrow, BpmChange, Difficulty } from "./types.js";
 
 const beats = [
@@ -87,25 +87,15 @@ export function mergeSimilarBpmRanges(bpm: BpmChange[]): BpmChange[] {
  * if we found a `background` tag, rename it to `bg`
  * @param images image data
  */
-export function renameBackground(images: Images & { background?: string }) {
+export function renameBackground(
+  images: ParsedImages & { background?: string }
+) {
   if (typeof images.background !== "undefined") {
     if (images.background) {
       images.bg = images.background;
     }
     delete images.background;
   }
-}
-
-/**
- * Get a printable error string from a thing which may be an error, or may not be
- * @param e error message or other object
- * @returns printable error string
- */
-export function printMaybeError(e: any) {
-  if (e && typeof e.message === "string") {
-    return `${e.message} ${e.stack}`;
-  }
-  return "mysterious non-error";
 }
 
 let errorTolerance: "bail" | "warn" | "ignore" = "warn";
@@ -121,16 +111,17 @@ export function setErrorTolerance(level: typeof errorTolerance) {
 /**
  * Depending on error tolerance level this may ignore, print, or bail with a given message
  * @param msg a message to maybe print or throw
+ * @param cause an error with stack trace, if available
  */
-export function reportError(msg: string) {
+export function reportError(msg: string, cause?: unknown) {
   switch (errorTolerance) {
     case "ignore":
       break;
     case "warn":
-      console.warn(msg);
+      console.warn(msg, cause);
       break;
     case "bail":
     default:
-      throw new Error(msg);
+      throw new Error(msg, { cause });
   }
 }
