@@ -1,6 +1,6 @@
-import { Pack, Simfile } from "../types.js";
-import { reportError, printMaybeError } from "../util.js";
-import { parseSong } from "./parseSong.js";
+import { Pack } from "../types.js";
+import { reportError } from "../util.js";
+import { BrowserSimfile, parseSong } from "./parseSong.js";
 import { isDirectoryEntry, isDirectoryHandle } from "./shared.js";
 
 /**
@@ -42,6 +42,8 @@ declare global {
     getAsFileSystemHandle?(): Promise<FileSystemHandle | null>;
   }
 }
+
+export type PackWithSongs = Pack & { simfiles: BrowserSimfile[] };
 
 /**
  * Parse a pack drag/dropped by a user in a browser
@@ -97,7 +99,7 @@ export async function parsePack(item: DataTransferItem | HTMLInputElement) {
     songCount: 0,
   };
 
-  const simfiles: Simfile[] = [];
+  const simfiles: BrowserSimfile[] = [];
   for await (const songFolder of getDirectories(dir)) {
     try {
       const songData = await parseSong(songFolder);
@@ -108,15 +110,13 @@ export async function parsePack(item: DataTransferItem | HTMLInputElement) {
         });
       }
     } catch (e) {
-      reportError(
-        `parseStepchart failed for '${songFolder.name}': ${printMaybeError(e)}`
-      );
+      reportError(`parseStepchart failed for '${songFolder.name}'`, e);
     }
   }
 
   pack.songCount = simfiles.length;
 
-  return {
+  return <PackWithSongs>{
     ...pack,
     simfiles,
   };

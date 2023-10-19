@@ -1,6 +1,7 @@
 import { parsers, supportedExtensions } from "../parsers/index.js";
 import { ParsedImages, RawSimfile } from "../parsers/types.js";
-import { Simfile } from "../types.js";
+import { Simfile, Title } from "../types.js";
+import { reportError } from "../util.js";
 import { extname, isFileEntry } from "./shared.js";
 
 /**
@@ -83,6 +84,79 @@ async function* getImages(
 }
 
 /**
+ * gets file handle/entry from a directory by name
+ * @param dir directory handle or entry
+ * @param name name of file to get
+ * @returns promise of a handle or entry
+ */
+async function getByName(dir: DirRef, name: string) {
+  if (name.startsWith("../")) {
+    if ("getFileHandle" in dir) {
+      throw new Error("no way to resolve upward relative paths using this api");
+    } else {
+      const parent = (await new Promise(
+        dir.getParent
+      )) as FileSystemDirectoryEntry;
+      return getByName(parent, name.slice(3));
+    }
+  }
+  if ("getFileHandle" in dir) {
+    return dir.getFileHandle(name);
+  } else {
+    return new Promise<FileSystemFileEntry>((resolve, reject) =>
+      dir.getFile(
+        name,
+        {},
+        (e) => {
+          if (isFileEntry(e)) {
+            resolve(e);
+          } else {
+            reject("file was not usable?");
+          }
+        },
+        reject
+      )
+    );
+  }
+}
+
+/**
+ * returns a file object from a handle/entry
+ * @param f the file handle or file entry
+ * @returns promise of File object
+ */
+async function getFileContents(f: FileSystemFileHandle | FileSystemFileEntry) {
+  if ("getFile" in f) {
+    return f.getFile();
+  } else {
+    return new Promise<File>((res, reject) => {
+      const a = true;
+      f.file(res, (reason) => {
+        debugger;
+        reject(reason);
+      });
+      return a;
+    });
+  }
+}
+
+type DirRef = FileSystemDirectoryHandle | FileSystemDirectoryEntry;
+type FileRef = FileSystemFileHandle | FileSystemFileEntry;
+
+/**
+ * Same as above, but catches and reports the error
+ * @param dir directory reference
+ * @param name file name or path
+ * @returns promise of directory or null
+ */
+function guardedGetByName(dir: DirRef, name: string) {
+  return getByName(dir, name).catch((reason) => {
+    reportError(`failed to look up file ${name}`, reason);
+    return null;
+  });
+}
+
+/**
  * Make some best guesses about which images should be used for which fields
  * @param songDir path to a song directory
  * @param tagged image metadata found in simfile
@@ -92,31 +166,42 @@ async function guessImages(
   songDir: FileSystemDirectoryHandle | FileSystemDirectoryEntry,
   tagged: ParsedImages
 ) {
-  let jacket = tagged.jacket;
-  let bg = tagged.bg;
-  let banner = tagged.banner;
-  for await (const { name: imageName } of getImages(songDir)) {
+  let jacket: FileRef | null = tagged.jacket
+    ? await guardedGetByName(songDir, tagged.jacket).catch()
+    : null;
+  let bg: FileRef | null = tagged.bg
+    ? await guardedGetByName(songDir, tagged.bg)
+    : null;
+  let banner: FileRef | null = tagged.banner
+    ? await guardedGetByName(songDir, tagged.banner)
+    : null;
+  for await (const image of getImages(songDir)) {
+    const imageName = image.name;
     const ext = extname(imageName)!;
     if (
-      (!jacket && imageName.endsWith("-jacket" + ext)) ||
+      (!tagged.jacket && imageName.endsWith("-jacket" + ext)) ||
       imageName.startsWith("jacket.")
     ) {
-      jacket = imageName;
+      jacket = image;
     }
     if (
-      (!bg && imageName.endsWith("-bg" + ext)) ||
+      (!tagged.bg && imageName.endsWith("-bg" + ext)) ||
       imageName.startsWith("bg.")
     ) {
-      bg = imageName;
+      bg = image;
     }
     if (
-      (!banner && imageName.endsWith("-bn" + ext)) ||
+      (!tagged.bg && imageName.endsWith("-bn" + ext)) ||
       imageName.startsWith("bn.")
     ) {
-      banner = imageName;
+      banner = image;
     }
   }
-  return { jacket, bg, banner };
+  return {
+    jacket: jacket ? await getFileContents(jacket) : null,
+    bg: bg ? await getFileContents(bg) : null,
+    banner: banner ? await getFileContents(banner) : null,
+  };
 }
 
 /**
@@ -129,6 +214,16 @@ function getBpms(sm: Pick<RawSimfile, "charts">): number[] {
   return chart.bpm.map((b) => b.bpm);
 }
 
+export type BrowserTitle = Omit<Title, "banner" | "bg" | "jacket"> & {
+  banner: File | null;
+  bg: File | null;
+  jacket: File | null;
+};
+
+export type BrowserSimfile = Omit<Simfile, "title"> & {
+  title: BrowserTitle;
+};
+
 /**
  * Parse a single simfile. Automatically determines which parser to use depending on chart definition type.
  * @param songDir path to song folder (contains a chart definition file [dwi/sm], images, etc)
@@ -136,7 +231,7 @@ function getBpms(sm: Pick<RawSimfile, "charts">): number[] {
  */
 export async function parseSong(
   songDir: FileSystemDirectoryHandle | FileSystemDirectoryEntry
-): Promise<Omit<Simfile, "mix"> | null> {
+): Promise<BrowserSimfile | null> {
   const songFileHandleOrEntry = await getSongFile(songDir);
   if (!songFileHandleOrEntry) {
     return null;
