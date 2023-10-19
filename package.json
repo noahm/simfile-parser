@@ -6,6 +6,10 @@
   "main": "./dist/main.js",
   "browser": "./dist/browser/index.js",
   "types": "./dist/main.d.ts",
+  "exports": {
+    ".": "./dist/main.js",
+    "./browser": "./dist/browser/index.js"
+  },
   "bin": "./dist/cli.js",
   "sideEffects": "false",
   "scripts": {
