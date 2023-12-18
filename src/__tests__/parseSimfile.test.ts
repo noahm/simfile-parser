@@ -172,7 +172,7 @@ describe("parseSong", () => {
 
   test("single varied bpm song", () => {
     const simfile = parseSong(
-      path.join(packsRoot, "A20-(beta)", "Silly Love")
+      path.join(packsRoot, "A20-(beta)", "Silly Love"),
     )!;
     scrubDataForSnapshot(simfile);
     expect(simfile).toMatchInlineSnapshot(`
@@ -1448,7 +1448,7 @@ describe("parseSong", () => {
 
   test("single new song", () => {
     const simfile = parseSong(
-      path.join(packsRoot, "Club Fantastic Season 2", "TerpZone")
+      path.join(packsRoot, "Club Fantastic Season 2", "TerpZone"),
     )!;
     scrubDataForSnapshot(simfile);
     expect(simfile).toMatchInlineSnapshot(`
@@ -2809,7 +2809,7 @@ describe("parseSong", () => {
 
   test("modern varied bpm song", () => {
     const simfile = parseSong(
-      path.join(packsRoot, "BITE6 ITG Customs", "[T10] Neutrino")
+      path.join(packsRoot, "BITE6 ITG Customs", "[T10] Neutrino"),
     )!;
     scrubDataForSnapshot(simfile);
     expect(simfile).toMatchInlineSnapshot(`
@@ -3126,7 +3126,7 @@ describe("parseSong", () => {
 
   test("modern display bpm song", () => {
     const simfile = parseSong(
-      path.join(packsRoot, "BITE6 ITG Customs", "[T11] Fracture Ray")
+      path.join(packsRoot, "BITE6 ITG Customs", "[T11] Fracture Ray"),
     )!;
     scrubDataForSnapshot(simfile);
     expect(simfile).toMatchInlineSnapshot(`
@@ -3558,7 +3558,7 @@ describe("parseSong", () => {
 
   test("prefer newer file formats when multiple are available", () => {
     const simfile = parseSong(
-      path.join(packsRoot, "Bhop Ball", "[T07] Ants (No CMOD)")
+      path.join(packsRoot, "Bhop Ball", "[T07] Ants (No CMOD)"),
     )!;
     scrubDataForSnapshot(simfile, false);
     expect(simfile.title.titleName).toBe("[T07] Ants (No CMOD)");

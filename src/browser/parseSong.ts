@@ -13,7 +13,7 @@ import { extname, isFileEntry } from "./shared.js";
  * @returns the the most preferred candidate file
  */
 function getBestSongFileMatch<
-  T extends FileSystemFileEntry | FileSystemFileHandle
+  T extends FileSystemFileEntry | FileSystemFileHandle,
 >(files: T[]): T | null {
   if (!files.length) {
     return null;
@@ -30,7 +30,7 @@ function getBestSongFileMatch<
  * @returns file handle for the song file
  */
 async function getSongFile(
-  songDir: FileSystemDirectoryHandle | FileSystemDirectoryEntry
+  songDir: FileSystemDirectoryHandle | FileSystemDirectoryEntry,
 ) {
   if ("createReader" in songDir) {
     const candidates = await getSongFilesFromEntry(songDir);
@@ -77,7 +77,7 @@ const imageExts = new Set([".png", ".jpg"]);
  * @yields file handles filtered to supported image extentions
  */
 async function* getImages(
-  songDir: FileSystemDirectoryHandle | FileSystemDirectoryEntry
+  songDir: FileSystemDirectoryHandle | FileSystemDirectoryEntry,
 ) {
   let files:
     | AsyncIterable<FileSystemDirectoryHandle | FileSystemFileHandle>
@@ -86,7 +86,7 @@ async function* getImages(
     files = songDir.values();
   } else {
     files = await new Promise<FileSystemEntry[]>((res, rej) =>
-      songDir.createReader().readEntries(res, rej)
+      songDir.createReader().readEntries(res, rej),
     );
   }
   for await (const file of files) {
@@ -118,7 +118,7 @@ async function getByName(dir: DirRef, name: string) {
       throw new Error("no way to resolve upward relative paths using this api");
     } else {
       const parent = (await new Promise(
-        dir.getParent
+        dir.getParent,
       )) as FileSystemDirectoryEntry;
       return getByName(parent, name.slice(3));
     }
@@ -137,8 +137,8 @@ async function getByName(dir: DirRef, name: string) {
             reject("file was not usable?");
           }
         },
-        reject
-      )
+        reject,
+      ),
     );
   }
 }
@@ -187,7 +187,7 @@ function guardedGetByName(dir: DirRef, name: string) {
  */
 async function guessImages(
   songDir: FileSystemDirectoryHandle | FileSystemDirectoryEntry,
-  tagged: ParsedImages
+  tagged: ParsedImages,
 ) {
   let jacket: FileRef | null = tagged.jacket
     ? await guardedGetByName(songDir, tagged.jacket).catch()
@@ -263,7 +263,7 @@ export type BrowserSimfile = Omit<Simfile, "title"> & {
  * @returns a simfile object without mix info or null if no sm/ssc file was found
  */
 export async function parseSong(
-  songDir: FileSystemDirectoryHandle | FileSystemDirectoryEntry
+  songDir: FileSystemDirectoryHandle | FileSystemDirectoryEntry,
 ): Promise<BrowserSimfile | null> {
   const songFileHandleOrEntry = await getSongFile(songDir);
   if (!songFileHandleOrEntry) {
@@ -283,7 +283,7 @@ export async function parseSong(
     fileContents = await songFileHandleOrEntry.getFile();
   } else {
     fileContents = await new Promise((resolve, reject) =>
-      songFileHandleOrEntry.file(resolve, reject)
+      songFileHandleOrEntry.file(resolve, reject),
     );
   }
 
@@ -291,7 +291,7 @@ export async function parseSong(
 
   if (!Object.keys(rawStepchart.charts).length) {
     throw new Error(
-      `Failed to parse any charts from song: ${rawStepchart.title}`
+      `Failed to parse any charts from song: ${rawStepchart.title}`,
     );
   }
 

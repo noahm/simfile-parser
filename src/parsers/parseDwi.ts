@@ -47,7 +47,7 @@ type ArrowParseResult = {
  */
 function combinePadsIntoOneStream(
   p1: ArrowParseResult,
-  p2: ArrowParseResult
+  p2: ArrowParseResult,
 ): ArrowParseResult {
   const arrows = p1.arrows
     .concat(p2.arrows)
@@ -104,7 +104,7 @@ function combinePadsIntoOneStream(
  */
 function findFirstNonEmptyMeasure(
   p1Notes: string,
-  p2Notes: string | undefined
+  p2Notes: string | undefined,
 ): number {
   let i = 0;
 
@@ -127,7 +127,7 @@ function findFirstNonEmptyMeasure(
  */
 function parseArrowStream(
   notes: string,
-  firstNonEmptyMeasureIndex: number
+  firstNonEmptyMeasureIndex: number,
 ): ArrowParseResult {
   const arrows: Arrow[] = [];
   const freezes: FreezeLocation[] = [];
@@ -172,7 +172,7 @@ function parseArrowStream(
           const of = openFreezes[d as FreezeLocation["direction"]];
           if (!of) {
             reportError(
-              "error parsing dwi freezes, tried to close a freeze that never opened"
+              "error parsing dwi freezes, tried to close a freeze that never opened",
             );
           } else {
             of.endOffset = curOffset.n / curOffset.d + 0.25;
@@ -208,7 +208,7 @@ function parseArrowStream(
       arrows.push({
         direction: dwiToSMDirection[note].replace(
           /1/g,
-          "2"
+          "2",
         ) as Arrow["direction"],
         quantization: determineBeat(curOffset),
         offset: curOffset.n / curOffset.d,
@@ -287,7 +287,7 @@ export function parseDwi(dwi: string, titlePath?: string): RawSimfile {
 
     const firstNonEmptyMeasureIndex = findFirstNonEmptyMeasure(
       notes,
-      playerTwoNotes
+      playerTwoNotes,
     );
 
     let arrowResult = parseArrowStream(notes, firstNonEmptyMeasureIndex);
@@ -295,7 +295,7 @@ export function parseDwi(dwi: string, titlePath?: string): RawSimfile {
     if (mode === "double") {
       const playerTwoResult = parseArrowStream(
         playerTwoNotes,
-        firstNonEmptyMeasureIndex
+        firstNonEmptyMeasureIndex,
       );
 
       arrowResult = combinePadsIntoOneStream(arrowResult, playerTwoResult);

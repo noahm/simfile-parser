@@ -85,7 +85,7 @@ function isRest(line: string): boolean {
 function findFirstNonEmptyMeasure(
   mode: "single" | "double",
   lines: string[],
-  i: number
+  i: number,
 ): { firstNonEmptyMeasureIndex: number; numMeasuresSkipped: number } {
   let numMeasuresSkipped = 0;
   let measureIndex = i;
@@ -108,7 +108,7 @@ function findFirstNonEmptyMeasure(
   }
 
   throw new Error(
-    "findFirstNonEmptyMeasure, failed to find a non-empty measure in entire song"
+    "findFirstNonEmptyMeasure, failed to find a non-empty measure in entire song",
   );
 }
 
@@ -143,7 +143,7 @@ export function parseSsc(ssc: string): RawSimfile {
    */
   function parseStops(
     stopsString: string | null,
-    emptyOffsetInMeasures: number
+    emptyOffsetInMeasures: number,
   ) {
     if (!stopsString) {
       return [];
@@ -197,7 +197,7 @@ export function parseSsc(ssc: string): RawSimfile {
     lines: string[],
     i: number,
     mode: string,
-    difficulty: string
+    difficulty: string,
   ): FreezeLocation[] {
     const freezes: FreezeLocation[] = [];
     const open: Record<number, Partial<FreezeLocation> | undefined> = {};
@@ -215,7 +215,7 @@ export function parseSsc(ssc: string): RawSimfile {
       if (line[0] === ",") {
         curMeasureFraction = new Fraction(
           1,
-          getMeasureLength(lines, i + 1) || 1
+          getMeasureLength(lines, i + 1) || 1,
         );
         continue;
       }
@@ -235,7 +235,7 @@ export function parseSsc(ssc: string): RawSimfile {
         if (cleanedLine[d] === "2" || cleanedLine[d] === "4") {
           if (open[d]) {
             reportError(
-              `${sc.title}, ${mode}, ${difficulty} -- error parsing freezes, found a new starting freeze before a previous one finished`
+              `${sc.title}, ${mode}, ${difficulty} -- error parsing freezes, found a new starting freeze before a previous one finished`,
             );
           } else {
             const startBeatFraction = curOffset;
@@ -248,7 +248,7 @@ export function parseSsc(ssc: string): RawSimfile {
           const thisFreeze = open[d];
           if (!thisFreeze) {
             reportError(
-              `${sc.title}, ${mode}, ${difficulty} -- error parsing freezes, tried to close a freeze that never opened`
+              `${sc.title}, ${mode}, ${difficulty} -- error parsing freezes, tried to close a freeze that never opened`,
             );
           } else {
             const endBeatFraction = curOffset.add(new Fraction(1, 4));
@@ -275,7 +275,7 @@ export function parseSsc(ssc: string): RawSimfile {
   function parseNotes(lines: string[], i: number, bpmString: string): number {
     if (!currentChart || !currentChart.mode || !currentChart.difficulty) {
       throw new Error(
-        "parseSsc: Can't parse notes before mode and difficulty are ready"
+        "parseSsc: Can't parse notes before mode and difficulty are ready",
       );
     }
     // move past #NOTES into the note metadata
@@ -306,7 +306,7 @@ export function parseSsc(ssc: string): RawSimfile {
       if (line.startsWith(",")) {
         curMeasureFraction = new Fraction(
           1,
-          getMeasureLength(lines, i + 1) || 1
+          getMeasureLength(lines, i + 1) || 1,
         );
         continue;
       }
@@ -326,7 +326,7 @@ export function parseSsc(ssc: string): RawSimfile {
       lines,
       firstMeasureIndex,
       currentChart.mode,
-      currentChart.difficulty
+      currentChart.difficulty,
     );
 
     currentChart.chart = {

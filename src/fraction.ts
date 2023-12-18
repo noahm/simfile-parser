@@ -21,7 +21,10 @@ function gcd(a: number, b: number) {
 }
 
 export class Fraction {
-  constructor(public n: number, public d: number = 1) {}
+  constructor(
+    public n: number,
+    public d: number = 1,
+  ) {}
 
   add(f: Fraction) {
     if (f.d === this.d) {
