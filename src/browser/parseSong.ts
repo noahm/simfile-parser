@@ -1,8 +1,28 @@
-import { parsers, supportedExtensions } from "../parsers/index.js";
+import {
+  parsers,
+  supportedExtensions,
+  sortFileCandidatesByPriority,
+} from "../parsers/index.js";
 import { ParsedImages, RawSimfile } from "../parsers/types.js";
 import { Simfile, Title } from "../types.js";
 import { reportError } from "../util.js";
 import { extname, isFileEntry } from "./shared.js";
+
+/**
+ * @param files a list of candidate files to use for song info
+ * @returns the the most preferred candidate file
+ */
+function getBestSongFileMatch<
+  T extends FileSystemFileEntry | FileSystemFileHandle
+>(files: T[]): T | null {
+  if (!files.length) {
+    return null;
+  }
+  files.sort((a, b) => {
+    return sortFileCandidatesByPriority(a.name, b.name);
+  });
+  return files[0];
+}
 
 /**
  * Find a simfile in a given directory
@@ -13,35 +33,38 @@ async function getSongFile(
   songDir: FileSystemDirectoryHandle | FileSystemDirectoryEntry
 ) {
   if ("createReader" in songDir) {
-    return getSongFileFromEntry(songDir);
+    const candidates = await getSongFilesFromEntry(songDir);
+    return getBestSongFileMatch(candidates);
   }
+
+  const candidates: FileSystemFileHandle[] = [];
   for await (const handle of songDir.values()) {
     if (handle.kind === "file") {
       if (supportedExtensions.some((ext) => handle.name.endsWith(ext))) {
-        return handle;
+        candidates.push(handle);
       }
     }
   }
-  return null;
+  return getBestSongFileMatch(candidates);
 }
 
 /**
  * @param songDir legacy file system entry
  * @returns promise of the found file entry or null
  */
-async function getSongFileFromEntry(songDir: FileSystemDirectoryEntry) {
+async function getSongFilesFromEntry(songDir: FileSystemDirectoryEntry) {
   const dirReader = songDir.createReader();
-  return new Promise<FileSystemFileEntry | null>((resolve, reject) => {
+  return new Promise<FileSystemFileEntry[]>((resolve, reject) => {
     dirReader.readEntries((results) => {
+      const ret: FileSystemFileEntry[] = [];
       for (const result of results) {
         if (isFileEntry(result)) {
           if (supportedExtensions.some((ext) => result.name.endsWith(ext))) {
-            resolve(result);
-            return;
+            ret.push(result);
           }
         }
       }
-      resolve(null);
+      resolve(ret);
     }, reject);
   });
 }

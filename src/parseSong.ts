@@ -1,7 +1,11 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { Simfile } from "./types.js";
-import { parsers, supportedExtensions } from "./parsers/index.js";
+import {
+  parsers,
+  supportedExtensions,
+  sortFileCandidatesByPriority,
+} from "./parsers/index.js";
 import type { ParsedImages, RawSimfile } from "./parsers/types.js";
 
 /**
@@ -11,7 +15,13 @@ import type { ParsedImages, RawSimfile } from "./parsers/types.js";
  */
 function getSongFile(songDir: string) {
   const files = fs.readdirSync(songDir);
-  return files.find((f) => supportedExtensions.some((ext) => f.endsWith(ext)));
+  const candidates = files
+    .filter((f) => supportedExtensions.some((ext) => f.endsWith(ext)))
+    .sort(sortFileCandidatesByPriority);
+  if (candidates.length) {
+    return candidates[0];
+  }
+  return null;
 }
 
 const imageExts = new Set([".png", ".jpg"]);

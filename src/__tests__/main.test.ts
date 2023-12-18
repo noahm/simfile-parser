@@ -31,6 +31,10 @@ describe("parseAllPacks", () => {
           "songs": 2,
         },
         {
+          "name": "Bhop Ball",
+          "songs": 2,
+        },
+        {
           "name": "Club Fantastic Season 1",
           "songs": 14,
         },

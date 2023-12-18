@@ -8,10 +8,10 @@ setErrorTolerance("ignore");
 const packsRoot = path.resolve(__dirname, "../../packs");
 
 // eslint-disable-next-line jsdoc/require-jsdoc
-function scrubDataForSnapshot(simfile: Simfile) {
+function scrubDataForSnapshot(simfile: Simfile, assertStepsExist = true) {
   // drop actual step info for a smaller snapshot
   Object.values(simfile.charts).forEach((chart) => {
-    expect(chart.arrows).not.toHaveLength(0);
+    assertStepsExist && expect(chart.arrows).not.toHaveLength(0);
     chart.arrows = "REDACTED" as any;
   });
   simfile.title.titleDir = path.relative(packsRoot, simfile.title.titleDir);
@@ -3554,5 +3554,13 @@ describe("parseSong", () => {
         },
       }
     `);
+  });
+
+  test("prefer newer file formats when multiple are available", () => {
+    const simfile = parseSong(
+      path.join(packsRoot, "Bhop Ball", "[T07] Ants (No CMOD)")
+    )!;
+    scrubDataForSnapshot(simfile, false);
+    expect(simfile.title.titleName).toBe("[T07] Ants (No CMOD)");
   });
 });

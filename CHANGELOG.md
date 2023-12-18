@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.7.1
+
+- Changed behavior when a song with both older `dwi` charts and newer `ssc` or `sm` files present. Before the first song to appear alphabetically would be used, but this might use the older `dwi` file as the source of info, which is unlikely to be desired. Now `ssc` files are used first, if present, then `sm`, and finally `dwi`.
+- Changed behavior when multiple files with the same extension exist as sometimes occurs when a text editor saves a hidden backup file with a leading period. (e.g. `song.sm` and `.song.sm` in a folder together) Files without a leading period are now always used over ones with a leading period.
+
 ## v0.7.0
 
 - Added support for in-browser parsing of entire simfile packs! Individual songs can be easily supported later. See [the readme](./README.md) for usage example.
