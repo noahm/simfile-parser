@@ -9,7 +9,7 @@ import { isDirectoryEntry, isDirectoryHandle } from "./shared.js";
  * @returns nothing
  */
 async function* getDirectories(
-  dir: FileSystemDirectoryHandle | FileSystemDirectoryEntry
+  dir: FileSystemDirectoryHandle | FileSystemDirectoryEntry,
 ) {
   if ("createReader" in dir) {
     const dirs = await getDirectoriesFromEntry(dir);

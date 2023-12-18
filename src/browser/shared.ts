@@ -29,7 +29,7 @@ export function isFileEntry(handle: {
  * @returns true if handle is a dir
  */
 export function isDirectoryHandle(
-  handle: FileSystemHandle
+  handle: FileSystemHandle,
 ): handle is FileSystemDirectoryHandle {
   return handle.kind === "directory";
 }
@@ -40,7 +40,7 @@ export function isDirectoryHandle(
  * @returns true if handle is a dir
  */
 export function isDirectoryEntry(
-  handle: FileSystemEntry
+  handle: FileSystemEntry,
 ): handle is FileSystemDirectoryEntry {
   return handle.isDirectory;
 }

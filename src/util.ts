@@ -88,7 +88,7 @@ export function mergeSimilarBpmRanges(bpm: BpmChange[]): BpmChange[] {
  * @param images image data
  */
 export function renameBackground(
-  images: ParsedImages & { background?: string }
+  images: ParsedImages & { background?: string },
 ) {
   if (typeof images.background !== "undefined") {
     if (images.background) {
