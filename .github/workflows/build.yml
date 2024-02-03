@@ -7,7 +7,7 @@ jobs:
     strategy:
       matrix:
         node: [18, 20]
-    name: Checks with Node ${{ matrix.node }}
+    name: Build and Test with Node ${{ matrix.node }}
     steps:
       - uses: actions/checkout@v3
 
@@ -28,5 +28,23 @@ jobs:
       - name: Unit Tests
         run: yarn test
 
+  checks:
+    runs-on: ubuntu-latest
+    name: Lints
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@noahm"
+          cache: "yarn"
+
+      - name: Init project
+        run: yarn --immutable
+
       - name: eslint
         run: yarn lint
+
+      - name: prettier
+        run: yarn format --check
