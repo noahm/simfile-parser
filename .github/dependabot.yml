@@ -14,9 +14,6 @@ updates:
         dependency-type: "production"
       development-dependencies:
         dependency-type: "development"
-        exclude-patterns:
-          - "prettier"
-          - "eslint-plugin-prettier"
 
   # Enable version updates for GitHub Actions
   - package-ecosystem: "github-actions"
