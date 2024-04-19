@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.7.2
+
+- Gracefully drop empty placeholder charts instead of bailing on the whole song
+
 ## v0.7.1
 
 - Changed behavior when a song with both older `dwi` charts and newer `ssc` or `sm` files present. Before the first song to appear alphabetically would be used, but this might use the older `dwi` file as the source of info, which is unlikely to be desired. Now `ssc` files are used first, if present, then `sm`, and finally `dwi`.
