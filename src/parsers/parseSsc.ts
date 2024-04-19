@@ -14,6 +14,7 @@ import {
   renameBackground,
   reportError,
 } from "../util.js";
+import { findFirstNonEmptyMeasure } from "./parseSm.js";
 
 // Ref: https://github.com/stepmania/stepmania/wiki/ssc
 
@@ -73,43 +74,6 @@ function trimNoteLine(line: string, mode: "single" | "double"): string {
 // eslint-disable-next-line jsdoc/require-jsdoc
 function isRest(line: string): boolean {
   return line.split("").every((d) => d === "0");
-}
-
-/**
- * finds first non-empty measure in a chart
- * @param mode gameplay mode of this chart
- * @param lines all the lines in a current file
- * @param i starting line index
- * @returns line index for first step, and how many measures were passed in getting there
- */
-function findFirstNonEmptyMeasure(
-  mode: "single" | "double",
-  lines: string[],
-  i: number,
-): { firstNonEmptyMeasureIndex: number; numMeasuresSkipped: number } {
-  let numMeasuresSkipped = 0;
-  let measureIndex = i;
-
-  for (; i < lines.length && !concludesANoteTag(lines[i]); ++i) {
-    const line = lines[i];
-    if (line.trim() === "") {
-      continue;
-    }
-
-    if (line.startsWith(",")) {
-      measureIndex = i + 1;
-      numMeasuresSkipped += 1;
-      continue;
-    }
-
-    if (!isRest(trimNoteLine(line, mode))) {
-      return { firstNonEmptyMeasureIndex: measureIndex, numMeasuresSkipped };
-    }
-  }
-
-  throw new Error(
-    "findFirstNonEmptyMeasure, failed to find a non-empty measure in entire song",
-  );
 }
 
 /**
@@ -284,8 +248,18 @@ export function parseSsc(ssc: string): RawSimfile {
     // now i is pointing at the first measure
     const arrows: Arrow[] = [];
 
+    const firstMeasureSearchResult = findFirstNonEmptyMeasure(
+      currentChart.mode,
+      lines,
+      i,
+    );
+    if (!firstMeasureSearchResult.found) {
+      // bail on current chart
+      currentChart = null;
+      return i + firstMeasureSearchResult.numMeasuresSkipped;
+    }
     const { firstNonEmptyMeasureIndex, numMeasuresSkipped } =
-      findFirstNonEmptyMeasure(currentChart.mode, lines, i);
+      firstMeasureSearchResult;
     i = firstNonEmptyMeasureIndex;
 
     const firstMeasureIndex = i;

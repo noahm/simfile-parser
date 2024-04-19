@@ -71,11 +71,17 @@ function isRest(line: string): boolean {
  * @param i starting line index
  * @returns line index for first step, and how many measures were passed in getting there
  */
-function findFirstNonEmptyMeasure(
+export function findFirstNonEmptyMeasure(
   mode: "single" | "double",
   lines: string[],
   i: number,
-): { firstNonEmptyMeasureIndex: number; numMeasuresSkipped: number } {
+):
+  | {
+      found: true;
+      firstNonEmptyMeasureIndex: number;
+      numMeasuresSkipped: number;
+    }
+  | { found: false; numMeasuresSkipped: number } {
   let numMeasuresSkipped = 0;
   let measureIndex = i;
 
@@ -92,13 +98,15 @@ function findFirstNonEmptyMeasure(
     }
 
     if (!isRest(trimNoteLine(line, mode))) {
-      return { firstNonEmptyMeasureIndex: measureIndex, numMeasuresSkipped };
+      return {
+        found: true,
+        firstNonEmptyMeasureIndex: measureIndex,
+        numMeasuresSkipped,
+      };
     }
   }
 
-  throw new Error(
-    "findFirstNonEmptyMeasure, failed to find a non-empty measure in entire song",
-  );
+  return { found: false, numMeasuresSkipped };
 }
 
 /**
@@ -255,7 +263,7 @@ export function parseSm(sm: string): RawSimfile {
   }
 
   /**
-   * Parse notes info for a chart
+   * Parse notes info for a chart and adds it to current chart's record of charts
    * @param lines all lines of current file
    * @param i current line
    * @param bpmString string of bpm changes for this chart
@@ -279,8 +287,12 @@ export function parseSm(sm: string): RawSimfile {
     // now i is pointing at the first measure
     const arrows: Arrow[] = [];
 
+    const firstMeasureSearchResult = findFirstNonEmptyMeasure(mode, lines, i);
+    if (!firstMeasureSearchResult.found) {
+      return i + firstMeasureSearchResult.numMeasuresSkipped;
+    }
     const { firstNonEmptyMeasureIndex, numMeasuresSkipped } =
-      findFirstNonEmptyMeasure(mode, lines, i);
+      firstMeasureSearchResult;
     i = firstNonEmptyMeasureIndex;
 
     const firstMeasureIndex = i;
