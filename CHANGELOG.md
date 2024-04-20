@@ -3,6 +3,7 @@
 ## v0.7.2
 
 - Gracefully drop empty placeholder charts instead of bailing on the whole song
+- Avoid spamming warnings when guessing jacket names in browser
 
 ## v0.7.1
 

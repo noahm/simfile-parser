@@ -5,7 +5,6 @@ import {
 } from "../parsers/index.js";
 import { ParsedImages, RawSimfile } from "../parsers/types.js";
 import { Simfile, Title } from "../types.js";
-import { reportError } from "../util.js";
 import { extname, isFileEntry } from "./shared.js";
 
 /**
@@ -172,11 +171,12 @@ type FileRef = FileSystemFileHandle | FileSystemFileEntry;
  * @param name file name or path
  * @returns promise of directory or null
  */
-function guardedGetByName(dir: DirRef, name: string) {
-  return getByName(dir, name).catch((reason) => {
-    reportError(`failed to look up file ${name}`, reason);
+async function guardedGetByName(dir: DirRef, name: string) {
+  try {
+    return await getByName(dir, name);
+  } catch {
     return null;
-  });
+  }
 }
 
 /**
@@ -190,7 +190,7 @@ async function guessImages(
   tagged: ParsedImages,
 ) {
   let jacket: FileRef | null = tagged.jacket
-    ? await guardedGetByName(songDir, tagged.jacket).catch()
+    ? await guardedGetByName(songDir, tagged.jacket)
     : null;
   let bg: FileRef | null = tagged.bg
     ? await guardedGetByName(songDir, tagged.bg)
