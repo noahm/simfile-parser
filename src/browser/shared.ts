@@ -23,6 +23,27 @@ export function isFileEntry(handle: {
   return handle.isFile;
 }
 
+export type AnyFileOrEntry =
+  | FileSystemFileEntry
+  | FileSystemDirectoryEntry
+  | FileSystemFileHandle
+  | FileSystemDirectoryHandle;
+
+/**
+ * given any handle or entry, determine if it is a directory
+ * @param handleOrEntry a file system handle or entry
+ * @returns true if directory
+ */
+export function isAnyDirectory(
+  handleOrEntry: FileSystemHandle | FileSystemEntry,
+): handleOrEntry is FileSystemDirectoryHandle | FileSystemDirectoryEntry {
+  if ("kind" in handleOrEntry) {
+    return handleOrEntry.kind === "directory";
+  } else {
+    return handleOrEntry.isDirectory;
+  }
+}
+
 /**
  * narrows the type of a file system handle
  * @param handle file system handle

@@ -5,7 +5,7 @@ import {
 } from "../parsers/index.js";
 import { ParsedImages, RawSimfile } from "../parsers/types.js";
 import { Simfile, Title } from "../types.js";
-import { extname, isFileEntry } from "./shared.js";
+import { extname, isAnyDirectory, isFileEntry } from "./shared.js";
 
 /**
  * @param files a list of candidate files to use for song info
@@ -258,14 +258,24 @@ export type BrowserSimfile = Omit<Simfile, "title"> & {
 };
 
 /**
- * Parse a single simfile. Automatically determines which parser to use depending on chart definition type.
+ * Parse a single simfile by folder or individual file. Automatically determines which parser to use depending on chart definition type.
  * @param songDir path to song folder (contains a chart definition file [dwi/sm], images, etc)
  * @returns a simfile object without mix info or null if no sm/ssc file was found
  */
 export async function parseSong(
-  songDir: FileSystemDirectoryHandle | FileSystemDirectoryEntry,
+  songDir:
+    | FileSystemDirectoryHandle
+    | FileSystemDirectoryEntry
+    | FileSystemFileHandle
+    | FileSystemFileEntry,
 ): Promise<BrowserSimfile | null> {
-  const songFileHandleOrEntry = await getSongFile(songDir);
+  let songFileHandleOrEntry: FileSystemFileHandle | FileSystemFileEntry | null =
+    null;
+  if (isAnyDirectory(songDir)) {
+    songFileHandleOrEntry = await getSongFile(songDir);
+  } else {
+    songFileHandleOrEntry = songDir;
+  }
   if (!songFileHandleOrEntry) {
     return null;
   }
@@ -304,7 +314,9 @@ export async function parseSong(
     displayBpm = minBpm === maxBpm ? minBpm.toString() : `${minBpm}-${maxBpm}`;
   }
 
-  const finalImages = await guessImages(songDir, images);
+  const finalImages = isAnyDirectory(songDir)
+    ? await guessImages(songDir, images)
+    : { banner: null, bg: null, jacket: null };
 
   return {
     ...rawStepchart,
