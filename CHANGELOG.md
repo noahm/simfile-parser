@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.8.0
+
+- Added `parseSongFolderOrData` to browser exports for parsing a single song folder or data file.
+
 ## v0.7.2
 
 - Gracefully drop empty placeholder charts instead of bailing on the whole song
