@@ -28,7 +28,7 @@ function getBestSongFileMatch<
  * @param songDir directory handle
  * @returns file handle for the song file
  */
-async function getSongFile(
+async function identifySongFile(
   songDir: FileSystemDirectoryHandle | FileSystemDirectoryEntry,
 ) {
   if ("createReader" in songDir) {
@@ -258,28 +258,58 @@ export type BrowserSimfile = Omit<Simfile, "title"> & {
 };
 
 /**
- * Parse a single simfile by folder or individual file. Automatically determines which parser to use depending on chart definition type.
- * @param songDir path to song folder (contains a chart definition file [dwi/sm], images, etc)
- * @returns a simfile object without mix info or null if no sm/ssc file was found
+ * given a directory or file handle/entry, get the actual File instance for the simfile
+ * @param entryOrHandle either a handle or entry type reference to a directory or file
+ * @returns File or null if not found
  */
-export async function parseSong(
-  songDir:
+async function getFileInstance(
+  entryOrHandle:
     | FileSystemDirectoryHandle
     | FileSystemDirectoryEntry
     | FileSystemFileHandle
     | FileSystemFileEntry,
-): Promise<BrowserSimfile | null> {
-  let songFileHandleOrEntry: FileSystemFileHandle | FileSystemFileEntry | null =
-    null;
-  if (isAnyDirectory(songDir)) {
-    songFileHandleOrEntry = await getSongFile(songDir);
+): Promise<File | null> {
+  let songFileHandleOrEntry: FileSystemFileHandle | FileSystemFileEntry;
+  if (isAnyDirectory(entryOrHandle)) {
+    const identified = await identifySongFile(entryOrHandle);
+    if (!identified) {
+      return null;
+    }
+    songFileHandleOrEntry = identified;
   } else {
-    songFileHandleOrEntry = songDir;
+    songFileHandleOrEntry = entryOrHandle;
   }
-  if (!songFileHandleOrEntry) {
-    return null;
+
+  let ret: File;
+  if ("getFile" in songFileHandleOrEntry) {
+    ret = await songFileHandleOrEntry.getFile();
+  } else {
+    ret = await new Promise((resolve, reject) =>
+      songFileHandleOrEntry.file(resolve, reject),
+    );
   }
-  const extension = extname(songFileHandleOrEntry.name);
+  return ret;
+}
+
+/**
+ * Parse a single simfile by folder or individual file. Automatically determines which parser to use depending on chart definition type.
+ * @param songDirOrFile song folder or file reference (contains a chart definition file [dwi/sm/ssc], images, etc)
+ * @returns a simfile object without mix info or null if no sm/ssc file was found
+ */
+export async function parseSong(
+  songDirOrFile:
+    | FileSystemDirectoryHandle
+    | FileSystemDirectoryEntry
+    | FileSystemFileHandle
+    | FileSystemFileEntry
+    | File,
+): Promise<BrowserSimfile | null> {
+  const file =
+    songDirOrFile instanceof File
+      ? songDirOrFile
+      : await getFileInstance(songDirOrFile);
+  if (!file) return null;
+  const extension = extname(file.name);
   if (!extension) return null;
 
   const parser = parsers[extension];
@@ -288,16 +318,7 @@ export async function parseSong(
     throw new Error(`No parser registered for extension: ${extension}`);
   }
 
-  let fileContents: File;
-  if ("getFile" in songFileHandleOrEntry) {
-    fileContents = await songFileHandleOrEntry.getFile();
-  } else {
-    fileContents = await new Promise((resolve, reject) =>
-      songFileHandleOrEntry.file(resolve, reject),
-    );
-  }
-
-  const { images, ...rawStepchart } = parser(await fileContents.text(), "");
+  const { images, ...rawStepchart } = parser(await file.text(), "");
 
   if (!Object.keys(rawStepchart.charts).length) {
     throw new Error(
@@ -314,8 +335,8 @@ export async function parseSong(
     displayBpm = minBpm === maxBpm ? minBpm.toString() : `${minBpm}-${maxBpm}`;
   }
 
-  const finalImages = isAnyDirectory(songDir)
-    ? await guessImages(songDir, images)
+  const finalImages = isAnyDirectory(songDirOrFile)
+    ? await guessImages(songDirOrFile, images)
     : { banner: null, bg: null, jacket: null };
 
   return {
@@ -323,7 +344,7 @@ export async function parseSong(
     title: {
       titleName: rawStepchart.title,
       translitTitleName: rawStepchart.titletranslit ?? null,
-      titleDir: songDir.name,
+      titleDir: songDirOrFile.name,
       ...finalImages,
     },
     minBpm,

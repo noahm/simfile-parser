@@ -35,13 +35,14 @@ export type AnyFileOrEntry =
  * @returns true if directory
  */
 export function isAnyDirectory(
-  handleOrEntry: FileSystemHandle | FileSystemEntry,
+  handleOrEntry: FileSystemHandle | FileSystemEntry | File,
 ): handleOrEntry is FileSystemDirectoryHandle | FileSystemDirectoryEntry {
   if ("kind" in handleOrEntry) {
     return handleOrEntry.kind === "directory";
-  } else {
+  } else if ("isDirectory" in handleOrEntry) {
     return handleOrEntry.isDirectory;
   }
+  return false;
 }
 
 /**

@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.8.1
+
+- Added support for parsing individual simfiles via HTMLInputElement selection in Firefox.
+
 ## v0.8.0
 
 - Added `parseSongFolderOrData` to browser exports for parsing a single song folder or data file.

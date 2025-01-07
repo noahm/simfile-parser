@@ -128,22 +128,27 @@ export async function parsePack(item: DataTransferItem | HTMLInputElement) {
 
 /**
  * For parsing a single song instead. Parses either a whole song folder, or just the metadata from a single simfile (ssc/sm/dwi)
- * @param item a data transfer item
+ * @param item a data transfer item or HTML Input element a user has added a file selection to
  * @returns a simfile or null
  */
 export async function parseSongFolderOrData(
   item: DataTransferItem | HTMLInputElement,
 ): Promise<BrowserSimfile | null> {
-  let dirOrFile: FileSystemEntry | FileSystemHandle;
+  let dirOrFile: FileSystemEntry | FileSystemHandle | File;
   if (item instanceof HTMLInputElement) {
-    if ("webkitEntries" in item) {
+    if ("webkitEntries" in item && item.webkitEntries.length > 0) {
       const entries = item.webkitEntries;
-      if (entries.length !== 1) {
+      if (entries.length > 1) {
         throw new Error("expected exactly one selected file");
       }
       dirOrFile = entries[0];
+    } else if (item.files?.length) {
+      if (item.files.length > 1) {
+        throw new Error("expected exactly one selected file");
+      }
+      dirOrFile = item.files[0];
     } else {
-      throw new Error("entries property not available on provided input");
+      throw new Error("no files available on provided input");
     }
   } else {
     if (item.kind !== "file") {
