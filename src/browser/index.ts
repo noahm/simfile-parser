@@ -1,7 +1,11 @@
 import { Pack } from "../types.js";
 import { reportError } from "../util.js";
 import { BrowserSimfile, parseSong } from "./parseSong.js";
-import { isDirectoryEntry, isDirectoryHandle } from "./shared.js";
+import {
+  AnyFileOrEntry,
+  isDirectoryEntry,
+  isDirectoryHandle,
+} from "./shared.js";
 
 /**
  * @param dir directory handle
@@ -120,4 +124,51 @@ export async function parsePack(item: DataTransferItem | HTMLInputElement) {
     ...pack,
     simfiles,
   };
+}
+
+/**
+ * For parsing a single song instead. Parses either a whole song folder, or just the metadata from a single simfile (ssc/sm/dwi)
+ * @param item a data transfer item or HTML Input element a user has added a file selection to
+ * @returns a simfile or null
+ */
+export async function parseSongFolderOrData(
+  item: DataTransferItem | HTMLInputElement,
+): Promise<BrowserSimfile | null> {
+  let dirOrFile: FileSystemEntry | FileSystemHandle | File;
+  if (item instanceof HTMLInputElement) {
+    if ("webkitEntries" in item && item.webkitEntries.length > 0) {
+      const entries = item.webkitEntries;
+      if (entries.length > 1) {
+        throw new Error("expected exactly one selected file");
+      }
+      dirOrFile = entries[0];
+    } else if (item.files?.length) {
+      if (item.files.length > 1) {
+        throw new Error("expected exactly one selected file");
+      }
+      dirOrFile = item.files[0];
+    } else {
+      throw new Error("no files available on provided input");
+    }
+  } else {
+    if (item.kind !== "file") {
+      throw new Error("expected file to be dropped, but it was not a file");
+    }
+    if (item.getAsFileSystemHandle) {
+      const dirHandle = await item.getAsFileSystemHandle();
+      if (!dirHandle) {
+        throw new Error("could not get file handle from drop item");
+      }
+      dirOrFile = dirHandle;
+    } else if ("webkitGetAsEntry" in item) {
+      const entry = item.webkitGetAsEntry();
+      if (!entry) {
+        throw new Error("could not get a file entry from drop item");
+      }
+      dirOrFile = entry;
+    } else {
+      throw new Error("no supported file drop mechanism supported");
+    }
+  }
+  return parseSong(dirOrFile as AnyFileOrEntry);
 }
