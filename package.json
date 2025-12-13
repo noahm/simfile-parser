@@ -13,7 +13,7 @@
   "bin": "./dist/cli.js",
   "sideEffects": "false",
   "scripts": {
-    "test": "jest",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "format": "prettier --write src/**/*.ts",
     "lint": "eslint --max-warnings 0 ./src",
     "build": "tsc -p tsconfig.json",
@@ -37,23 +37,6 @@
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/noahm/simfile-parser/issues"
-  },
-  "jest": {
-    "preset": "ts-jest/presets/default-esm",
-    "extensionsToTreatAsEsm": [
-      ".ts"
-    ],
-    "moduleNameMapper": {
-      "^(\\.{1,2}/.*)\\.js$": "$1"
-    },
-    "transform": {
-      "^.+\\.tsx?$": [
-        "ts-jest",
-        {
-          "useESM": true
-        }
-      ]
-    }
   },
   "engines": {
     "node": ">=16.9.0"

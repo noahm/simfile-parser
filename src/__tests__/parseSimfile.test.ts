@@ -5,7 +5,7 @@ import { Simfile } from "../types";
 import { setErrorTolerance } from "../util";
 
 setErrorTolerance("ignore");
-const packsRoot = path.resolve(__dirname, "../../packs");
+const packsRoot = path.resolve(import.meta.dirname, "../../packs");
 
 // eslint-disable-next-line jsdoc/require-jsdoc
 function scrubDataForSnapshot(simfile: Simfile, assertStepsExist = true) {

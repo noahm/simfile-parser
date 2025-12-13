@@ -3,7 +3,7 @@ import { calculateStats } from "../calculateStats";
 import { parseSong, setErrorTolerance } from "../main";
 
 setErrorTolerance("ignore");
-const packsRoot = path.resolve(__dirname, "../../packs");
+const packsRoot = path.resolve(import.meta.dirname, "../../packs");
 
 test("stats", () => {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
