@@ -3,7 +3,7 @@ import { parseAllPacks } from "../main";
 import { setErrorTolerance } from "../util";
 
 setErrorTolerance("bail");
-const packsRoot = path.resolve(__dirname, "../../packs");
+const packsRoot = path.resolve(import.meta.dirname, "../../packs");
 
 describe("parseAllPacks", () => {
   test("parses each pack separately", () => {
