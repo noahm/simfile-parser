@@ -73,7 +73,7 @@ const imageExts = new Set([".png", ".jpg"]);
 /**
  * Get all image files in a given directory
  * @param songDir directory
- * @yields file handles filtered to supported image extentions
+ * @yields {FileSystemDirectoryHandle | FileSystemDirectoryEntry} file handles filtered to supported image extentions
  */
 async function* getImages(
   songDir: FileSystemDirectoryHandle | FileSystemDirectoryEntry,
@@ -201,7 +201,7 @@ async function guessImages(
   const leftovers: FileRef[] = [];
   for await (const image of getImages(songDir)) {
     const imageName = image.name;
-    const ext = extname(imageName)!;
+    const ext = extname(imageName) || "";
     if (
       (!tagged.jacket && imageName.endsWith("-jacket" + ext)) ||
       imageName.startsWith("jacket.")

@@ -11,7 +11,7 @@ const packsRoot = path.resolve(__dirname, "../../packs");
 function scrubDataForSnapshot(simfile: Simfile, assertStepsExist = true) {
   // drop actual step info for a smaller snapshot
   Object.values(simfile.charts).forEach((chart) => {
-    assertStepsExist && expect(chart.arrows).not.toHaveLength(0);
+    if (assertStepsExist) expect(chart.arrows).not.toHaveLength(0);
     chart.arrows = "REDACTED" as any;
   });
   simfile.title.titleDir = path.relative(packsRoot, simfile.title.titleDir);

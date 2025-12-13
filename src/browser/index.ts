@@ -9,7 +9,7 @@ import {
 
 /**
  * @param dir directory handle
- * @yields FileSystemDirectoryHandle for each subdir of the given dir
+ * @yields {FileSystemDirectoryHandle | FileSystemDirectoryEntry} for each subdir of the given dir
  * @returns nothing
  */
 async function* getDirectories(
