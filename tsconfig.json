@@ -18,6 +18,7 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
+    "rootDir": "./src",
     "outDir": "./dist/",
     "types": ["node", "jest", "wicg-file-system-access"],
     "lib": ["ES2022", "DOM"]
