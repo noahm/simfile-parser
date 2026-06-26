@@ -158,6 +158,10 @@ describe("parseSong", () => {
         "maxBpm": 200,
         "minBpm": 200,
         "stopCount": 0,
+        "subtitle": {
+          "subtitleName": "",
+          "translitSubtitleName": null,
+        },
         "title": {
           "banner": "AFRONOVA.png",
           "bg": "AFRONOVA-bg.png",
@@ -1434,6 +1438,10 @@ describe("parseSong", () => {
         "maxBpm": 154,
         "minBpm": 124,
         "stopCount": 0,
+        "subtitle": {
+          "subtitleName": "",
+          "translitSubtitleName": null,
+        },
         "title": {
           "banner": "Silly Love.png",
           "bg": "Silly Love-bg.png",
@@ -2795,6 +2803,10 @@ describe("parseSong", () => {
         "maxBpm": 138,
         "minBpm": 138,
         "stopCount": 0,
+        "subtitle": {
+          "subtitleName": "",
+          "translitSubtitleName": null,
+        },
         "title": {
           "banner": "bn.png",
           "bg": "bg.png",
@@ -3112,6 +3124,10 @@ describe("parseSong", () => {
         "maxBpm": 205,
         "minBpm": 150,
         "stopCount": 0,
+        "subtitle": {
+          "subtitleName": "",
+          "translitSubtitleName": null,
+        },
         "title": {
           "banner": "bn.png",
           "bg": "bg.png",
@@ -3544,6 +3560,10 @@ describe("parseSong", () => {
         "maxBpm": 100,
         "minBpm": 17,
         "stopCount": 0,
+        "subtitle": {
+          "subtitleName": "",
+          "translitSubtitleName": null,
+        },
         "title": {
           "banner": "fracture-bn.png",
           "bg": "fracture-bg.png",
@@ -3562,5 +3582,46 @@ describe("parseSong", () => {
     )!;
     scrubDataForSnapshot(simfile, false);
     expect(simfile.title.titleName).toBe("[T07] Ants (No CMOD)");
+  });
+
+  test("songs with subtitle", () => {
+    const shoes = parseSong(
+      path.join(
+        packsRoot,
+        "Club Fantastic Season 1",
+        "Shoes (Club Fantastic Edit)",
+      ),
+    )!;
+    expect(shoes.title.titleName).toBe("Shoes");
+    expect(shoes.subtitle).toEqual({
+      subtitleName: "(Club Fantastic Edit)",
+      translitSubtitleName: null,
+    });
+
+    const bossy = parseSong(
+      path.join(
+        packsRoot,
+        "Club Fantastic Season 2",
+        "BOSSY (Jorts Speedy Mix)",
+      ),
+    )!;
+    expect(bossy.title.titleName).toBe("BOSSY");
+    expect(bossy.subtitle).toEqual({
+      subtitleName: "(Jorts Speedy Mix)",
+      translitSubtitleName: null,
+    });
+
+    const oceania = parseSong(
+      path.join(
+        packsRoot,
+        "Club Fantastic Season 2",
+        "Oceania 909 (T2KAZUYA Remix)",
+      ),
+    )!;
+    expect(oceania.title.titleName).toBe("Oceania 909");
+    expect(oceania.subtitle).toEqual({
+      subtitleName: "(T2KAZUYA Remix)",
+      translitSubtitleName: null,
+    });
   });
 });

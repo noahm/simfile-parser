@@ -347,6 +347,10 @@ export async function parseSong(
       titleDir: songDirOrFile.name,
       ...finalImages,
     },
+    subtitle: {
+      subtitleName: rawStepchart.subtitle ?? "",
+      translitSubtitleName: rawStepchart.subtitletranslit ?? null,
+    },
     minBpm,
     maxBpm,
     displayBpm,
