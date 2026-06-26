@@ -74,6 +74,7 @@ export interface Stepchart {
 export interface Simfile {
   /** metadata about the song */
   title: Title;
+  subtitle: Subtitle;
   artist: string;
   /** metadata about the song's parent pack */
   pack: Pack;
@@ -101,4 +102,9 @@ export interface Title {
   banner: string | null;
   bg: string | null;
   jacket: string | null;
+}
+
+export interface Subtitle {
+  subtitleName: string;
+  translitSubtitleName: string | null;
 }

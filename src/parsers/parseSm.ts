@@ -12,8 +12,21 @@ import {
 // Ref: https://github.com/stepmania/stepmania/wiki/sm
 
 // eslint-disable-next-line jsdoc/require-jsdoc
-function isMetaTag(tag: string): tag is "title" | "titletranslit" | "artist" {
-  return ["title", "titletranslit", "artist"].includes(tag);
+function isMetaTag(
+  tag: string,
+): tag is
+  | "title"
+  | "titletranslit"
+  | "subtitle"
+  | "subtitletranslit"
+  | "artist" {
+  return [
+    "title",
+    "titletranslit",
+    "subtitle",
+    "subtitletranslit",
+    "artist",
+  ].includes(tag);
 }
 // eslint-disable-next-line jsdoc/require-jsdoc
 function isImageTag(tag: string): tag is "banner" | "background" | "jacket" {

@@ -2,10 +2,12 @@ import type { Simfile } from "../types.js";
 
 export type RawSimfile = Omit<
   Simfile,
-  "mix" | "title" | "minBpm" | "maxBpm"
+  "mix" | "title" | "subtitle" | "minBpm" | "maxBpm"
 > & {
   title: string;
   titletranslit: string | null;
+  subtitle: string | undefined;
+  subtitletranslit: string | null;
   displayBpm: string | undefined;
   images: ParsedImages;
 };

@@ -143,6 +143,10 @@ export function parseSong(songDirPath: string): Simfile | null {
       titleDir: songDirPath,
       ...guessImages(songDirPath, images),
     },
+    subtitle: {
+      subtitleName: rawStepchart.subtitle ?? "",
+      translitSubtitleName: rawStepchart.subtitletranslit ?? null,
+    },
     minBpm,
     maxBpm,
     displayBpm,

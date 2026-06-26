@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.9.0
+
+- Exposed the subtitle tag in parsed results for better noCmod support (thanks Vincent!)
+
 ## v0.8.1
 
 - Added support for parsing individual simfiles via HTMLInputElement selection in Firefox.
