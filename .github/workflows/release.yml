@@ -20,7 +20,7 @@ jobs:
           scope: "@noahm"
           cache: "yarn"
       - name: Install dependencies
-        run: yarn --frozen-lockfile
+        run: yarn --immutable
       - name: eslint
         run: yarn lint
       - name: tests
@@ -39,7 +39,7 @@ jobs:
           registry-url: "https://registry.npmjs.org"
           cache: "yarn"
       - name: Install dependencies
-        run: yarn --frozen-lockfile
+        run: yarn --immutable
       - name: Build
         run: yarn build
       - name: Publish to NPM
