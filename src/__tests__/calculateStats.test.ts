@@ -5,9 +5,11 @@ import { parseSong, setErrorTolerance } from "../main";
 setErrorTolerance("ignore");
 const packsRoot = path.resolve(import.meta.dirname, "../../packs");
 
-test("stats", () => {
+test("stats", async () => {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const song = parseSong(path.join(packsRoot, "Easy As Pie 2", "Abracadabra"))!;
+  const song = await parseSong(
+    path.join(packsRoot, "Easy As Pie 2", "Abracadabra"),
+  )!;
   expect(calculateStats(song.charts["single-challenge"]))
     .toMatchInlineSnapshot(`
     {

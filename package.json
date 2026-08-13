@@ -1,6 +1,6 @@
 {
   "name": "simfile-parser",
-  "version": "0.10.0-beta.0",
+  "version": "1.0.0-beta.0",
   "description": "Read stepmania charts with javascript!",
   "type": "module",
   "main": "./dist/main.js",
@@ -39,7 +39,7 @@
     "url": "https://github.com/noahm/simfile-parser/issues"
   },
   "engines": {
-    "node": ">=16.9.0"
+    "node": ">=20.0.0"
   },
   "homepage": "https://github.com/noahm/simfile-parser#readme",
   "devDependencies": {

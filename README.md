@@ -9,7 +9,7 @@ Original parsing code from [city41/stepcharts](https://github.com/city41/stepcha
 ## Usage
 
 ```ts
-// in node.js >= 16.9.0
+// in node.js >= 20
 
 import {
   parseAllPacks,
@@ -18,10 +18,12 @@ import {
   calculateStats,
 } from "simfile-parser";
 
-// Use one of the three parsing functions depending on your needs:
-const allMyStuff = parseAllPacks("/pathToStepmania/Songs");
-const aGreatPack = parsePack("/pathToStepmania/Songs/DDRMAX2");
-const aGreatSong = parseSong(".../Songs/Easy as Pie 2/Abracadabra");
+// Use one of the three parsing functions depending on your needs.
+// Each takes a folder or a .zip, and each returns a promise.
+const allMyStuff = await parseAllPacks("/pathToStepmania/Songs");
+const aGreatPack = await parsePack("/pathToStepmania/Songs/DDRMAX2");
+const alsoAPack = await parsePack("/downloads/DDRMAX2.zip");
+const aGreatSong = await parseSong(".../Songs/Easy as Pie 2/Abracadabra");
 
 // you can get some top level info about a song's contents too:
 calculateStats(aGreatSong.charts["single-challenge"]);
@@ -37,8 +39,10 @@ calculateStats(aGreatSong.charts["single-challenge"]);
 
 ### Browser support
 
-Support dragging packs directly into a web app by parsing in-browser! A pack
-can be either a folder of song folders or a **zip file** containing one.
+Support dragging packs directly into a web app by parsing in-browser! The
+browser entry point offers the same `parsePack` and `parseSong`, taking
+anything the browser hands you: a `DataTransferItem`, an `HTMLInputElement`, a
+`File`, or a `Blob`.
 
 ```ts
 // requires typescript 5.0 in "Bundler" module resolution mode for typings
@@ -49,7 +53,7 @@ document.body.addEventListener("dragover", function (e) {
   e.preventDefault();
 });
 
-document.body.addEventListener("drop", async function (e) {
+document.body.addEventListener("drop", async function (evt) {
   // also necessary to prevent browser navigating to dropped folder
   evt.preventDefault();
   if (!evt.dataTransfer) {
@@ -70,32 +74,25 @@ document.body.addEventListener("drop", async function (e) {
 });
 ```
 
-#### Zipped packs
-
-`parsePack` detects zip files by content, so a pack dropped or selected as an
-archive needs no unzipping first. You can also hand one straight to
-`parseZipPack`, for example from a file input or a `fetch`:
+An archive can also be handed over directly, for example from a `fetch`:
 
 ```ts
-import { parseZipPack } from "simfile-parser/browser";
-
 const response = await fetch("/packs/Club Fantastic Season 1.zip");
-const pack = await parseZipPack(await response.blob(), "Club Fantastic");
+const pack = await parsePack(await response.blob(), "Club Fantastic");
 ```
 
-Archives are read lazily: only the archive index, each song's chart file, and
-its images are ever decompressed, so the audio and video that make up the bulk
-of a pack are skipped entirely and the whole archive never has to be held in
-memory.
+In the browser `path` is always `null`, since browsers never expose real paths.
 
-Only one pack per archive is supported. An archive holding several packs — a
-whole `Songs` directory, say — throws rather than quietly parsing nothing:
+### Zipped packs
 
-```
-expected an archive holding a single pack, but found 2: 'DDRMAX2', 'SuperNOVA2'
-```
+Every parsing function can read a zip file directly rather than making you unzip it first. Archives are detected by content, not by file extension. `parsePack` also accepts a `Blob` or `File`, so an archive you already have in memory never has to be written out.
 
-Reading zips uses [`DecompressionStream`][ds], which needs Chrome 103+,
-Firefox 113+, or Safari 16.4+. Encrypted archives are not supported.
+Given a path, an archive is read lazily off disk: only its index and each
+song's chart file are read to parse a pack, and images are located but not
+loaded until you ask for them. Parsing a 55 MB pack reads **0.44 MB**, and the
+archive is never held in memory.
+
+Reading zips uses [`DecompressionStream`][ds], which needs node 20+, Chrome
+103+, Firefox 113+, or Safari 16.4+. Encrypted archives are not supported.
 
 [ds]: https://developer.mozilla.org/en-US/docs/Web/API/DecompressionStream

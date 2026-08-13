@@ -1,82 +1,25 @@
-import * as fs from "node:fs";
 import * as path from "node:path";
 import { parsePack as parsePackFromDisk } from "../main";
-import { parsePack, parseZipPack } from "../browser/index";
-import { openZip, isZip, DirLike, isDir } from "../browser/vfs";
-import { readCentralDirectory, readEntry } from "../browser/zip";
+import { parsePack, parseSong } from "../browser/index";
+import { isZip, openZip } from "../vfs/archive";
+import { DirLike, entriesOf, isDir } from "../vfs/index";
+import { readCentralDirectory, readEntry } from "../vfs/zip";
 import { makeZip, ZipFixtureFile, ZipFixtureOptions } from "./makeZip";
+import { found, packsRoot, readPackFiles, zipPack } from "./packFixtures";
 import { setErrorTolerance } from "../util";
 
 setErrorTolerance("bail");
 
-const packsRoot = path.resolve(import.meta.dirname, "../../packs");
 const fixturePack = "Bhop Ball";
-
-/**
- * Reads a real pack off disk so it can be zipped up for the end to end tests.
- * Audio is skipped to keep the fixtures small; it is never parsed anyway.
- * @param packName name of a pack in the packs directory
- * @param prefix path to nest the pack's contents under inside the archive
- * @returns one entry per file in the pack
- */
-function readPackFiles(packName: string, prefix = ""): ZipFixtureFile[] {
-  const root = path.join(packsRoot, packName);
-  const files: ZipFixtureFile[] = [];
-  const walk = (dir: string) => {
-    for (const child of fs.readdirSync(dir, { withFileTypes: true })) {
-      const full = path.join(dir, child.name);
-      if (child.isDirectory()) {
-        walk(full);
-      } else if (!/\.(ogg|mp3|wav|avi|mpg)$/i.test(child.name)) {
-        files.push({
-          name: prefix + path.relative(root, full).split(path.sep).join("/"),
-          data: new Uint8Array(fs.readFileSync(full)),
-        });
-      }
-    }
-  };
-  walk(root);
-  return files;
-}
-
-/**
- * @param packName name of a pack in the packs directory
- * @param prefix path to nest the pack's contents under inside the archive
- * @param options how to encode the archive
- * @returns the pack as a zip file
- */
-async function zipPack(
-  packName: string,
-  prefix = "",
-  options: ZipFixtureOptions = {},
-) {
-  const blob = await makeZip(readPackFiles(packName, prefix), options);
-  return new File([blob], `${packName}.zip`);
-}
-
-/**
- * Asserts something was found, so the tests can go on to use it without
- * reaching for non-null assertions.
- * @param value the possibly missing value
- * @param what a description of what was being looked for
- * @returns the value
- */
-function found<T>(value: T | null | undefined, what: string): T {
-  if (!value) {
-    throw new Error(`expected to find ${what}`);
-  }
-  return value;
-}
 
 /**
  * @param dir a virtual directory
  * @returns the names of its children, sorted
  */
 async function childNames(dir: DirLike) {
-  const names: string[] = [];
-  for await (const entry of dir.entries()) {
-    names.push(isDir(entry) ? `${entry.name}/` : entry.name);
-  }
+  const names = (await entriesOf(dir)).map((entry) =>
+    isDir(entry) ? `${entry.name}/` : entry.name,
+  );
   return names.sort();
 }
 
@@ -190,7 +133,7 @@ describe("openZip", () => {
     const root = await openZip(await sampleArchive(), "archive");
     expect(await childNames(root)).toEqual(["Pack/"]);
 
-    const [pack] = [...(await entriesOf(root))];
+    const [pack] = await entriesOf(root);
     expect(await childNames(pack as DirLike)).toEqual([
       "Song One/",
       "Song Two/",
@@ -202,6 +145,15 @@ describe("openZip", () => {
     expect(await childNames(root)).not.toContain("__MACOSX/");
     const pack = (await entriesOf(root))[0] as DirLike;
     expect(await childNames(pack)).not.toContain(".DS_Store");
+  });
+
+  test("reports no path for anything inside an archive", async () => {
+    const root = await openZip(await sampleArchive(), "archive");
+    const pack = (await entriesOf(root))[0] as DirLike;
+    expect(pack.path).toBeNull();
+    expect(
+      found(await pack.getFile("Song One/steps.sm"), "steps.sm").path,
+    ).toBeNull();
   });
 
   test("resolves paths relative to a directory", async () => {
@@ -226,6 +178,8 @@ describe("openZip", () => {
     // the simfile might tag this as banner.png while the archive has BANNER.png
     const banner = found(await songOne.getFile("banner.png"), "banner.png");
     expect(await (await banner.file()).text()).toBe("banner bytes");
+    // and it reports the name the archive really holds, not the one asked for
+    expect(banner.name).toBe("BANNER.png");
   });
 
   test("only reads a given entry once", async () => {
@@ -250,42 +204,20 @@ describe("openZip", () => {
   });
 });
 
-/**
- * @param dir a virtual directory
- * @returns its children as an array
- */
-async function entriesOf(dir: DirLike) {
-  const all = [];
-  for await (const entry of dir.entries()) {
-    all.push(entry);
-  }
-  return all;
-}
-
-describe("parseZipPack", () => {
+describe("parsePack in the browser", () => {
   /**
-   * The node parser reads the same pack straight off disk, so it makes a good
-   * reference for what the zip parser ought to produce.
+   * The same pack read straight off disk makes a good reference for what the
+   * zip path ought to produce.
    * @returns comparable fields for each song, sorted by title
    */
-  const fromDisk = () =>
-    parsePackFromDisk(path.join(packsRoot, fixturePack))
-      .simfiles.map((s) => ({
-        title: s.title.titleName,
-        artist: s.artist,
-        minBpm: s.minBpm,
-        maxBpm: s.maxBpm,
-        displayBpm: s.displayBpm,
-        stopCount: s.stopCount,
-        charts: Object.keys(s.charts).sort(),
-      }))
-      .sort((a, b) => a.title.localeCompare(b.title));
+  const fromDisk = async () =>
+    comparable(await parsePackFromDisk(path.join(packsRoot, fixturePack)));
 
   /**
    * @param pack a parsed pack
    * @returns comparable fields for each song, sorted by title
    */
-  const comparable = (pack: Awaited<ReturnType<typeof parseZipPack>>) =>
+  const comparable = (pack: Awaited<ReturnType<typeof parsePack>>) =>
     pack.simfiles
       .map((s) => ({
         title: s.title.titleName,
@@ -300,19 +232,19 @@ describe("parseZipPack", () => {
 
   test("matches the on-disk parser, for a pack wrapped in a folder", async () => {
     const zip = await zipPack(fixturePack, `${fixturePack}/`);
-    const pack = await parseZipPack(zip);
+    const pack = await parsePack(zip);
     expect(pack.songCount).toBe(2);
     expect(pack.name).toBe(fixturePack);
-    expect(comparable(pack)).toEqual(fromDisk());
+    expect(comparable(pack)).toEqual(await fromDisk());
   });
 
   test("matches the on-disk parser, for songs at the archive root", async () => {
     const zip = await zipPack(fixturePack);
-    const pack = await parseZipPack(zip);
+    const pack = await parsePack(zip);
     expect(pack.songCount).toBe(2);
     // falls back to the archive's own filename for the pack name
     expect(pack.name).toBe(fixturePack);
-    expect(comparable(pack)).toEqual(fromDisk());
+    expect(comparable(pack)).toEqual(await fromDisk());
   });
 
   test("ignores mac metadata sitting alongside the pack folder", async () => {
@@ -323,9 +255,9 @@ describe("parseZipPack", () => {
       { name: "__MACOSX/._" + fixturePack, data: "junk" },
       { name: `__MACOSX/${fixturePack}/._steps.sm`, data: "junk" },
     ]);
-    const pack = await parseZipPack(new File([blob], `${fixturePack}.zip`));
+    const pack = await parsePack(new File([blob], `${fixturePack}.zip`));
     expect(pack.name).toBe(fixturePack);
-    expect(comparable(pack)).toEqual(fromDisk());
+    expect(comparable(pack)).toEqual(await fromDisk());
   });
 
   describe("a pack holding only one song", () => {
@@ -344,13 +276,13 @@ describe("parseZipPack", () => {
     // one song folder is the ambiguous case: a lone subfolder is normally a
     // wrapper to descend through, but here it is the song itself
     test("finds it at the archive root", async () => {
-      const pack = await parseZipPack(await singleSongZip(""));
+      const pack = await parsePack(await singleSongZip(""));
       expect(pack.songCount).toBe(1);
       expect(pack.name).toBe("Solo Pack");
     });
 
     test("finds it inside a pack folder", async () => {
-      const pack = await parseZipPack(await singleSongZip("Solo Pack/"));
+      const pack = await parsePack(await singleSongZip("Solo Pack/"));
       expect(pack.songCount).toBe(1);
       expect(pack.name).toBe("Solo Pack");
     });
@@ -358,35 +290,36 @@ describe("parseZipPack", () => {
 
   test("descends through several wrapper folders", async () => {
     const zip = await zipPack(fixturePack, `downloads/new/${fixturePack}/`);
-    const pack = await parseZipPack(zip);
+    const pack = await parsePack(zip);
     expect(pack.songCount).toBe(2);
     expect(pack.name).toBe(fixturePack);
   });
 
   test("parses stored and zip64 archives the same way", async () => {
     const reference = comparable(
-      await parseZipPack(await zipPack(fixturePack, `${fixturePack}/`)),
+      await parsePack(await zipPack(fixturePack, `${fixturePack}/`)),
     );
     for (const options of [{ stored: true }, { zip64: true }]) {
       const zip = await zipPack(fixturePack, `${fixturePack}/`, options);
-      expect(comparable(await parseZipPack(zip))).toEqual(reference);
+      expect(comparable(await parsePack(zip))).toEqual(reference);
     }
   });
 
-  test("extracts images as files", async () => {
+  test("exposes images as lazy handles carrying the real bytes", async () => {
     const zip = await zipPack(fixturePack, `${fixturePack}/`);
-    const pack = await parseZipPack(zip);
+    const pack = await parsePack(zip);
     const song = found(
       pack.simfiles.find((s) => s.title.titleDir.includes("Central Utopia")),
       "Central Utopia",
     );
     const bg = found(song.title.bg, "a background image");
     const banner = found(song.title.banner, "a banner image");
-    expect(bg).toBeInstanceOf(File);
-    expect(banner).toBeInstanceOf(File);
+    // nothing inside an archive has a location on disk
+    expect(bg.path).toBeNull();
+    expect(banner.path).toBeNull();
     // the real image bytes came through, not an empty placeholder
-    expect(bg.size).toBeGreaterThan(0);
-    expect(banner.size).toBeGreaterThan(0);
+    expect((await bg.file()).size).toBeGreaterThan(0);
+    expect((await banner.file()).size).toBeGreaterThan(0);
   });
 
   test("still finds the pack when junk folders sit beside it", async () => {
@@ -394,9 +327,9 @@ describe("parseZipPack", () => {
       ...readPackFiles(fixturePack, `${fixturePack}/`),
       { name: "_screenshots/shot.png", data: "not a song" },
     ]);
-    const pack = await parseZipPack(new File([blob], "download.zip"));
+    const pack = await parsePack(new File([blob], "download.zip"));
     expect(pack.name).toBe(fixturePack);
-    expect(comparable(pack)).toEqual(fromDisk());
+    expect(comparable(pack)).toEqual(await fromDisk());
   });
 
   describe("archives that aren't a single pack", () => {
@@ -413,15 +346,14 @@ describe("parseZipPack", () => {
 
     test("refuses an archive holding more than one pack", async () => {
       const zip = await multiPackZip(["Bhop Ball", "Club Fantastic"]);
-      await expect(parseZipPack(zip)).rejects.toThrow(
-        "expected an archive holding a single pack, but found 2: " +
-          "'Bhop Ball', 'Club Fantastic'",
+      await expect(parsePack(zip)).rejects.toThrow(
+        "expected a single pack, but found 2: 'Bhop Ball', 'Club Fantastic'",
       );
     });
 
     test("summarizes the rest when there are lots of packs", async () => {
       const names = ["A", "B", "C", "D", "E", "F", "G"];
-      await expect(parseZipPack(await multiPackZip(names))).rejects.toThrow(
+      await expect(parsePack(await multiPackZip(names))).rejects.toThrow(
         "found 7: 'A', 'B', 'C', 'D', 'E', and 2 more",
       );
     });
@@ -430,30 +362,32 @@ describe("parseZipPack", () => {
       const blob = await makeZip([
         { name: "notes/readme.txt", data: "no charts here" },
       ]);
-      await expect(parseZipPack(new File([blob], "notes.zip"))).rejects.toThrow(
-        /found no songs in this archive/,
+      await expect(parsePack(new File([blob], "notes.zip"))).rejects.toThrow(
+        /found no songs here/,
       );
     });
   });
 
   test("accepts an explicit pack name", async () => {
     const zip = await zipPack(fixturePack, `${fixturePack}/`);
-    expect((await parseZipPack(zip, "Custom Name")).name).toBe("Custom Name");
-  });
-});
-
-describe("parsePack", () => {
-  test("accepts a zip file directly", async () => {
-    const zip = await zipPack(fixturePack, `${fixturePack}/`);
-    const pack = await parsePack(zip);
-    expect(pack.songCount).toBe(2);
-    expect(pack.name).toBe(fixturePack);
+    expect((await parsePack(zip, "Custom Name")).name).toBe("Custom Name");
   });
 
   test("rejects a file that is not a zip or a folder", async () => {
     const notAPack = new File(["#TITLE:lonely;"], "steps.sm");
-    await expect(parsePack(notAPack)).rejects.toThrow(
-      /expected a folder or zip file/,
+    await expect(parsePack(notAPack)).rejects.toThrow(/but got a single file/);
+  });
+
+  test("parses a lone chart file through parseSong", async () => {
+    const chart = found(
+      readPackFiles(fixturePack).find((f) => f.name.endsWith(".sm")),
+      "a chart file",
     );
+    const song = await parseSong(new File([chart.data], "steps.sm"));
+
+    expect(song?.title.titleName).toBeTruthy();
+    // no folder to look in, so no images and nowhere on disk to point at
+    expect(song?.title.banner).toBeNull();
+    expect(song?.title.titlePath).toBeNull();
   });
 });

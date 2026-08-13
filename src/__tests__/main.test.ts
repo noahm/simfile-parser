@@ -6,9 +6,9 @@ setErrorTolerance("bail");
 const packsRoot = path.resolve(import.meta.dirname, "../../packs");
 
 describe("parseAllPacks", () => {
-  test("parses each pack separately", () => {
+  test("parses each pack separately", async () => {
     expect(
-      parseAllPacks(packsRoot).map((p) => ({
+      (await parseAllPacks(packsRoot)).map((p) => ({
         name: p.name,
         songs: p.songCount,
       })),

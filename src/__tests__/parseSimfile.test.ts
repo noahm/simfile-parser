@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import * as path from "path";
-import { parseSong } from "../parseSong";
+import { parseSong } from "../main";
 import { Simfile } from "../types";
 import { setErrorTolerance } from "../util";
 
@@ -14,12 +14,20 @@ function scrubDataForSnapshot(simfile: Simfile, assertStepsExist = true) {
     if (assertStepsExist) expect(chart.arrows).not.toHaveLength(0);
     chart.arrows = "REDACTED" as any;
   });
-  simfile.title.titleDir = path.relative(packsRoot, simfile.title.titleDir);
+  simfile.title.titlePath = simfile.title.titlePath
+    ? path.relative(packsRoot, simfile.title.titlePath)
+    : null;
+  // images are lazy handles now; snapshot the filename each one resolved to
+  for (const role of ["banner", "bg", "jacket"] as const) {
+    simfile.title[role] = (simfile.title[role]?.name ?? null) as any;
+  }
 }
 
 describe("parseSong", () => {
-  test("single old song", () => {
-    const simfile = parseSong(path.join(packsRoot, "3rdMix", "AFRONOVA"))!;
+  test("single old song", async () => {
+    const simfile = await parseSong(
+      path.join(packsRoot, "3rdMix", "AFRONOVA"),
+    )!;
     scrubDataForSnapshot(simfile);
     expect(simfile).toMatchInlineSnapshot(`
       {
@@ -166,16 +174,17 @@ describe("parseSong", () => {
           "banner": "AFRONOVA.png",
           "bg": "AFRONOVA-bg.png",
           "jacket": null,
-          "titleDir": "3rdMix/AFRONOVA",
+          "titleDir": "AFRONOVA",
           "titleName": "AFRONOVA",
+          "titlePath": "3rdMix/AFRONOVA",
           "translitTitleName": null,
         },
       }
     `);
   });
 
-  test("single varied bpm song", () => {
-    const simfile = parseSong(
+  test("single varied bpm song", async () => {
+    const simfile = await parseSong(
       path.join(packsRoot, "A20-(beta)", "Silly Love"),
     )!;
     scrubDataForSnapshot(simfile);
@@ -1444,18 +1453,19 @@ describe("parseSong", () => {
         },
         "title": {
           "banner": "Silly Love.png",
-          "bg": "Silly Love-bg.png",
+          "bg": "Silly Love.png",
           "jacket": "Silly Love-jacket.png",
-          "titleDir": "A20-(beta)/Silly Love",
+          "titleDir": "Silly Love",
           "titleName": "Silly Love",
+          "titlePath": "A20-(beta)/Silly Love",
           "translitTitleName": null,
         },
       }
     `);
   });
 
-  test("single new song", () => {
-    const simfile = parseSong(
+  test("single new song", async () => {
+    const simfile = await parseSong(
       path.join(packsRoot, "Club Fantastic Season 2", "TerpZone"),
     )!;
     scrubDataForSnapshot(simfile);
@@ -2811,16 +2821,17 @@ describe("parseSong", () => {
           "banner": "bn.png",
           "bg": "bg.png",
           "jacket": "jacket.png",
-          "titleDir": "Club Fantastic Season 2/TerpZone",
+          "titleDir": "TerpZone",
           "titleName": "TerpZone",
+          "titlePath": "Club Fantastic Season 2/TerpZone",
           "translitTitleName": null,
         },
       }
     `);
   });
 
-  test("modern varied bpm song", () => {
-    const simfile = parseSong(
+  test("modern varied bpm song", async () => {
+    const simfile = await parseSong(
       path.join(packsRoot, "BITE6 ITG Customs", "[T10] Neutrino"),
     )!;
     scrubDataForSnapshot(simfile);
@@ -3131,17 +3142,18 @@ describe("parseSong", () => {
         "title": {
           "banner": "bn.png",
           "bg": "bg.png",
-          "jacket": "",
-          "titleDir": "BITE6 ITG Customs/[T10] Neutrino",
+          "jacket": null,
+          "titleDir": "[T10] Neutrino",
           "titleName": "[T10] Neutrino",
+          "titlePath": "BITE6 ITG Customs/[T10] Neutrino",
           "translitTitleName": null,
         },
       }
     `);
   });
 
-  test("modern display bpm song", () => {
-    const simfile = parseSong(
+  test("modern display bpm song", async () => {
+    const simfile = await parseSong(
       path.join(packsRoot, "BITE6 ITG Customs", "[T11] Fracture Ray"),
     )!;
     scrubDataForSnapshot(simfile);
@@ -3565,27 +3577,28 @@ describe("parseSong", () => {
           "translitSubtitleName": null,
         },
         "title": {
-          "banner": "fracture-bn.png",
-          "bg": "fracture-bg.png",
-          "jacket": "",
-          "titleDir": "BITE6 ITG Customs/[T11] Fracture Ray",
+          "banner": null,
+          "bg": null,
+          "jacket": null,
+          "titleDir": "[T11] Fracture Ray",
           "titleName": "[T11] Fracture Ray",
+          "titlePath": "BITE6 ITG Customs/[T11] Fracture Ray",
           "translitTitleName": null,
         },
       }
     `);
   });
 
-  test("prefer newer file formats when multiple are available", () => {
-    const simfile = parseSong(
+  test("prefer newer file formats when multiple are available", async () => {
+    const simfile = await parseSong(
       path.join(packsRoot, "Bhop Ball", "[T07] Ants (No CMOD)"),
     )!;
     scrubDataForSnapshot(simfile, false);
     expect(simfile.title.titleName).toBe("[T07] Ants (No CMOD)");
   });
 
-  test("songs with subtitle", () => {
-    const shoes = parseSong(
+  test("songs with subtitle", async () => {
+    const shoes = await parseSong(
       path.join(
         packsRoot,
         "Club Fantastic Season 1",
@@ -3598,7 +3611,7 @@ describe("parseSong", () => {
       translitSubtitleName: null,
     });
 
-    const bossy = parseSong(
+    const bossy = await parseSong(
       path.join(
         packsRoot,
         "Club Fantastic Season 2",
@@ -3611,7 +3624,7 @@ describe("parseSong", () => {
       translitSubtitleName: null,
     });
 
-    const oceania = parseSong(
+    const oceania = await parseSong(
       path.join(
         packsRoot,
         "Club Fantastic Season 2",

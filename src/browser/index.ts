@@ -1,8 +1,9 @@
-import { supportedExtensions } from "../parsers/index.js";
-import { Pack } from "../types.js";
-import { reportError } from "../util.js";
-import { BrowserSimfile, parseSong } from "./parseSong.js";
-import { AnyEntry, DirLike, fromDom, isDir, isZip, openZip } from "./vfs.js";
+import { parsePackFromEntry, PackWithSongs } from "../parsePack.js";
+import { parseSongFromEntry } from "../parseSong.js";
+import { Simfile } from "../types.js";
+import { isZip, openZip, stripZipExtension } from "../vfs/archive.js";
+import { AnyEntry, isDir, isEntry } from "../vfs/index.js";
+import { fromDom } from "../vfs/dom.js";
 
 declare global {
   interface DataTransferItem {
@@ -11,20 +12,34 @@ declare global {
   }
 }
 
-export type PackWithSongs = Pack & { simfiles: BrowserSimfile[] };
+export * from "../types.js";
+export * from "../calculateStats.js";
+export { setErrorTolerance } from "../util.js";
+export type { PackWithSongs } from "../parsePack.js";
+export type { AnyEntry, DirLike, FileLike } from "../vfs/index.js";
 
-export type { BrowserSimfile, BrowserTitle } from "./parseSong.js";
+/** anything a browser might hand us for a dropped or selected item */
+export type BrowserSource =
+  | DataTransferItem
+  | HTMLInputElement
+  | File
+  | Blob
+  | AnyEntry;
 
 /**
  * Pulls a usable file/folder reference out of whatever the browser handed us.
- * @param item a dropped item, a file input, or a file
+ * @param item a dropped item, a file input, a file, or an archive's contents
  * @returns the item as a virtual filesystem entry
  */
-async function resolveItem(
-  item: DataTransferItem | HTMLInputElement | File,
-): Promise<AnyEntry> {
+async function resolveItem(item: BrowserSource): Promise<AnyEntry> {
+  if (isEntry(item)) {
+    return item;
+  }
   if (item instanceof File) {
     return fromDom(item);
+  }
+  if (item instanceof Blob) {
+    return openZip(item);
   }
   if (item instanceof HTMLInputElement) {
     if ("webkitEntries" in item && item.webkitEntries.length) {
@@ -62,237 +77,49 @@ async function resolveItem(
 }
 
 /**
- * @param dir a directory to inspect
- * @returns true if the directory directly contains a simfile
+ * Expands a dropped or selected item into something parsable, opening it as an
+ * archive if that is what it turns out to be.
+ * @param item whatever the browser handed us
+ * @returns the item as a virtual filesystem entry
  */
-async function containsSimfile(dir: DirLike): Promise<boolean> {
-  for await (const entry of dir.entries()) {
-    if (
-      !isDir(entry) &&
-      supportedExtensions.some((ext) => entry.name.endsWith(ext))
-    ) {
-      return true;
-    }
+async function resolveSource(item: BrowserSource): Promise<AnyEntry> {
+  const entry = await resolveItem(item);
+  if (isDir(entry)) {
+    return entry;
   }
-  return false;
+  const file = await entry.file();
+  if (await isZip(file)) {
+    return openZip(file, stripZipExtension(entry.name));
+  }
+  return entry;
 }
 
 /**
- * @param dir a directory to inspect
- * @returns the directory's immediate subfolders
- */
-async function subdirectories(dir: DirLike): Promise<DirLike[]> {
-  const subdirs: DirLike[] = [];
-  for await (const entry of dir.entries()) {
-    if (isDir(entry)) {
-      subdirs.push(entry);
-    }
-  }
-  return subdirs;
-}
-
-/**
- * @param dir a directory to inspect
- * @returns true if any of the directory's subfolders is a song folder
- */
-async function looksLikePack(dir: DirLike): Promise<boolean> {
-  for (const subdir of await subdirectories(dir)) {
-    if (await containsSimfile(subdir)) {
-      return true;
-    }
-  }
-  return false;
-}
-
-/** how many nested wrapper folders to look through before giving up */
-const maxPackDepth = 4;
-
-type PackSearch =
-  | { type: "found"; dir: DirLike }
-  | { type: "multiple"; packs: DirLike[] }
-  | { type: "none" };
-
-/**
- * Finds the folder that actually holds the song folders. Archives commonly
- * wrap a pack in one or more extra folders, so descend through them until we
- * reach a folder whose children look like songs.
- * @param dir the root of the archive
- * @param depth how many levels have been descended so far
- * @returns the pack folder, or why one couldn't be settled on
- */
-async function findPackRoot(dir: DirLike, depth = 0): Promise<PackSearch> {
-  if (await looksLikePack(dir)) {
-    return { type: "found", dir };
-  }
-
-  // nothing here is a song, so look for the pack among the subfolders. Doing
-  // it by what they contain rather than by counting them means junk folders
-  // sitting next to the pack don't make it ambiguous.
-  const subdirs = await subdirectories(dir);
-  const packs: DirLike[] = [];
-  for (const subdir of subdirs) {
-    if (await looksLikePack(subdir)) {
-      packs.push(subdir);
-    }
-  }
-  if (packs.length === 1) {
-    return { type: "found", dir: packs[0] };
-  }
-  if (packs.length > 1) {
-    return { type: "multiple", packs };
-  }
-
-  if (subdirs.length === 1 && depth < maxPackDepth) {
-    return findPackRoot(subdirs[0], depth + 1);
-  }
-  return { type: "none" };
-}
-
-/** how many pack names to name individually before summarizing the rest */
-const maxNamesInError = 5;
-
-/**
- * @param packs the packs found in an archive
- * @returns an error explaining that only one pack can be parsed at a time
- */
-function multiplePacksError(packs: DirLike[]): Error {
-  // sorted so the message doesn't depend on the order the archive happens to
-  // list its entries in
-  const names = packs.map((pack) => `'${pack.name}'`).sort();
-  const listed = names.slice(0, maxNamesInError).join(", ");
-  const rest = names.length - maxNamesInError;
-  return new Error(
-    `expected an archive holding a single pack, but found ${names.length}: ` +
-      (rest > 0 ? `${listed}, and ${rest} more` : listed),
-  );
-}
-
-/**
- * @param dirName the name of the folder a pack was found in
- * @returns pack metadata derived from that folder name
- */
-function packFromDirName(dirName: string): Pack {
-  return {
-    name: dirName.replace(/-/g, " "),
-    dir: dirName,
-    songCount: 0,
-  };
-}
-
-/**
- * Parses every song folder inside a directory into a pack
- * @param dir the pack's folder
- * @param pack metadata for the pack being built, mutated with the song count
- * @returns parsed pack
- */
-async function parsePackDir(dir: DirLike, pack: Pack): Promise<PackWithSongs> {
-  const songFolders: DirLike[] = [];
-  for await (const entry of dir.entries()) {
-    if (isDir(entry)) {
-      songFolders.push(entry);
-    }
-  }
-
-  const simfiles: BrowserSimfile[] = [];
-  for (const songFolder of songFolders) {
-    try {
-      const songData = await parseSong(songFolder);
-      if (songData) {
-        simfiles.push({
-          ...songData,
-          pack,
-        });
-      }
-    } catch (e) {
-      reportError(`parseStepchart failed for '${songFolder.name}'`, e);
-    }
-  }
-
-  pack.songCount = simfiles.length;
-
-  return {
-    ...pack,
-    simfiles,
-  };
-}
-
-/**
- * @param filename name of a zip file
- * @returns the name with any `.zip` extension removed
- */
-function stripZipExtension(filename: string) {
-  return filename.replace(/\.zip$/i, "");
-}
-
-/**
- * Parse a pack directly from a zip archive, without unzipping it first.
+ * Parse a pack drag/dropped or selected by a user in a browser. The pack may
+ * be a folder of song folders or a `.zip` archive holding one, which is how
+ * packs are usually distributed; archives are read lazily, so only chart files
+ * and images are ever decompressed.
  *
- * Only the archive's index and the files belonging to each song are read, so
- * large packs don't have to be held in memory all at once.
- * @param archive the zip file
- * @param name optional pack name. Defaults to the name of the folder the songs
- * were found in, falling back to the archive's own filename.
- * @throws {Error} if the archive holds more than one pack, or no songs at all
- * @returns parsed pack
- */
-export async function parseZipPack(
-  archive: File | Blob,
-  name?: string,
-): Promise<PackWithSongs> {
-  const archiveName =
-    archive instanceof File ? stripZipExtension(archive.name) : "";
-  const root = await openZip(archive, archiveName);
-
-  const search = await findPackRoot(root);
-  if (search.type === "multiple") {
-    throw multiplePacksError(search.packs);
-  }
-  if (search.type === "none") {
-    throw new Error(
-      "found no songs in this archive; expected a pack containing one folder per song",
-    );
-  }
-  const packDir = search.dir;
-  const dirName = packDir.name || archiveName;
-  return parsePackDir(
-    packDir,
-    // an explicitly provided name is used as given, rather than being run
-    // through the guesswork we apply to folder names
-    name ? { name, dir: dirName, songCount: 0 } : packFromDirName(dirName),
-  );
-}
-
-/**
- * Parse a pack drag/dropped by a user in a browser. The pack may be either a
- * folder of song folders or a zip archive containing one.
+ * If the pack is wrapped in extra folders — as archives commonly are — it is
+ * found inside them.
  * @param item a DataTransferItem from a drop event, a file input, or a file
+ * @param name optional pack name, overriding the guess made from the folder
+ * @throws {Error} if more than one pack is found, or no songs at all
  * @returns parsed pack
  */
 export async function parsePack(
-  item: DataTransferItem | HTMLInputElement | File,
+  item: BrowserSource,
+  name?: string,
 ): Promise<PackWithSongs> {
-  const entry = await resolveItem(item);
-
-  if (!isDir(entry)) {
-    const file = await entry.file();
-    if (!(await isZip(file))) {
-      throw new Error("expected a folder or zip file, but got another file");
-    }
-    // let parseZipPack name the pack after the folder it finds the songs in,
-    // falling back to the archive's filename
-    return parseZipPack(file);
-  }
-
-  return parsePackDir(entry, packFromDirName(entry.name));
+  return parsePackFromEntry(await resolveSource(item), name);
 }
 
 /**
- * For parsing a single song instead. Parses either a whole song folder, or just the metadata from a single simfile (ssc/sm/dwi)
- * @param item a data transfer item or HTML Input element a user has added a file selection to
- * @returns a simfile or null
+ * Parse a single song, either a whole song folder or just the metadata from an
+ * individual chart file (ssc/sm/dwi).
+ * @param item a data transfer item, file input, or file
+ * @returns a simfile object without pack info, or null if no chart was found
  */
-export async function parseSongFolderOrData(
-  item: DataTransferItem | HTMLInputElement | File,
-): Promise<BrowserSimfile | null> {
-  return parseSong(await resolveItem(item));
+export async function parseSong(item: BrowserSource): Promise<Simfile | null> {
+  return parseSongFromEntry(await resolveSource(item));
 }
