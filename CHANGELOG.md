@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.0.0
+
+Node and browser now share one API, and every parsing function reads a `.zip` as well as local unpacked files and folders.
+
+- NEW: Added support for parsing of packs directly from a zip file. `parsePack` now accepts zip file in addition to a folder, and the new `parseZipPack` export takes a `File`/`Blob` directly. Archives are read lazily, so only the chart files and images are decompressed and the whole pack never has to be held in memory. Song folders may sit at the root of the archive or nested inside a pack folder.
+- **BREAKING** `parsePack`, `parseAllPacks`, and `parseSong` are now asynchronous and return promises.
+- **BREAKING** all three accept a folder **or** a `.zip`, `parsePack` and `parseSong` also accept a `Blob`/`File` directly. `parseAllPacks` walks a `Songs` directory holding any mix of pack folders and archives. The separate `parseZipPack` is gone; use `parsePack`.
+- **BREAKING** a song's `banner`, `bg`, and `jacket` are now `ImageRef` handles `{ name, path, file() }` instead of bare strings. `path` is the location on disk, or `null` for an image inside an archive, and `file()` reads the bytes on demand.
+- **BREAKING** only images that actually exist are reported. A song tagging an image it doesn't ship now gets `null` instead of a filename pointing at nothing, and an empty tag gets `null` instead of `""`.
+- **BREAKING** `Title.titleDir` is now the song's folder name on every platform; the on-disk location moved to the new `Title.titlePath`, which is `null` for songs inside an archive. `Pack.dir` likewise holds the folder name, with the new `Pack.path` holding the location.
+- **BREAKING** the browser entry point exports `parseSong` in place of `parseSongFolderOrData`, and the `BrowserSimfile`/`BrowserTitle` are now replaced with plain `Simfile` and `Title`.
+- **BREAKING** raised the minimum node version from 16.9 to 20.
+- Fixed browser directory listings being truncated for large folders.
+
 ## v0.9.0
 
 - Exposed the subtitle tag in parsed results for better noCmod support (thanks Vincent!)

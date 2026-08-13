@@ -1,44 +1,9 @@
-import { Pack } from "../types.js";
-import { reportError } from "../util.js";
-import { BrowserSimfile, parseSong } from "./parseSong.js";
-import {
-  AnyFileOrEntry,
-  isDirectoryEntry,
-  isDirectoryHandle,
-} from "./shared.js";
-
-/**
- * @param dir directory handle
- * @yields {FileSystemDirectoryHandle | FileSystemDirectoryEntry} for each subdir of the given dir
- * @returns nothing
- */
-async function* getDirectories(
-  dir: FileSystemDirectoryHandle | FileSystemDirectoryEntry,
-) {
-  if ("createReader" in dir) {
-    const dirs = await getDirectoriesFromEntry(dir);
-    yield* dirs;
-  } else {
-    for await (const child of dir.values()) {
-      if (child.kind === "directory") {
-        yield child;
-      }
-    }
-  }
-}
-
-/**
- * @param dir file system entry
- * @returns only subdirectories of the given directory
- */
-function getDirectoriesFromEntry(dir: FileSystemDirectoryEntry) {
-  const dirReader = dir.createReader();
-  return new Promise<FileSystemDirectoryEntry[]>((resolve, reject) => {
-    dirReader.readEntries((results) => {
-      resolve(results.filter(isDirectoryEntry));
-    }, reject);
-  });
-}
+import { parsePackFromEntry, PackWithSongs } from "../parsePack.js";
+import { parseSongFromEntry } from "../parseSong.js";
+import { Simfile } from "../types.js";
+import { isZip, openZip, stripZipExtension } from "../vfs/archive.js";
+import { AnyEntry, isDir, isEntry } from "../vfs/index.js";
+import { fromDom } from "../vfs/dom.js";
 
 declare global {
   interface DataTransferItem {
@@ -47,128 +12,114 @@ declare global {
   }
 }
 
-export type PackWithSongs = Pack & { simfiles: BrowserSimfile[] };
+export * from "../types.js";
+export * from "../calculateStats.js";
+export { setErrorTolerance } from "../util.js";
+export type { PackWithSongs } from "../parsePack.js";
+export type { AnyEntry, DirLike, FileLike } from "../vfs/index.js";
+
+/** anything a browser might hand us for a dropped or selected item */
+export type BrowserSource =
+  | DataTransferItem
+  | HTMLInputElement
+  | File
+  | Blob
+  | AnyEntry;
 
 /**
- * Parse a pack drag/dropped by a user in a browser
- * @param item a DataTransferItem from a drop event
- * @returns parsed pack
+ * Pulls a usable file/folder reference out of whatever the browser handed us.
+ * @param item a dropped item, a file input, a file, or an archive's contents
+ * @returns the item as a virtual filesystem entry
  */
-export async function parsePack(item: DataTransferItem | HTMLInputElement) {
-  let dir: FileSystemDirectoryEntry | FileSystemDirectoryHandle;
+async function resolveItem(item: BrowserSource): Promise<AnyEntry> {
+  if (isEntry(item)) {
+    return item;
+  }
+  if (item instanceof File) {
+    return fromDom(item);
+  }
+  if (item instanceof Blob) {
+    return openZip(item);
+  }
   if (item instanceof HTMLInputElement) {
-    if ("webkitEntries" in item) {
-      const entries = item.webkitEntries;
-      if (entries.length !== 1) {
+    if ("webkitEntries" in item && item.webkitEntries.length) {
+      if (item.webkitEntries.length > 1) {
         throw new Error("expected exactly one selected file");
       }
-      const entry = entries[0];
-      if (!isDirectoryEntry(entry)) {
-        throw new Error("expected folder to be dropped, but got file");
-      }
-      dir = entry;
-    } else {
-      throw new Error("entries property not available on provided input");
+      return fromDom(item.webkitEntries[0]);
     }
-  } else {
-    if (item.kind !== "file") {
-      throw new Error("expected file to be dropped, but it was not a file");
-    }
-    if (item.getAsFileSystemHandle) {
-      const dirHandle = await item.getAsFileSystemHandle();
-      if (!dirHandle) {
-        throw new Error("could not get file handle from drop item");
-      }
-      if (!isDirectoryHandle(dirHandle)) {
-        throw new Error("expected folder to be dropped, but got file");
-      }
-      dir = dirHandle;
-    } else if ("webkitGetAsEntry" in item) {
-      const entry = item.webkitGetAsEntry();
-      if (!entry) {
-        throw new Error("could not get a file entry from drop item");
-      }
-      if (!isDirectoryEntry(entry)) {
-        throw new Error("expected folder to be dropped, but got file");
-      }
-      dir = entry;
-    } else {
-      throw new Error("no supported file drop mechanism supported");
-    }
-  }
-
-  const pack: Pack = {
-    name: dir.name.replace(/-/g, " "),
-    dir: dir.name,
-    songCount: 0,
-  };
-
-  const simfiles: BrowserSimfile[] = [];
-  for await (const songFolder of getDirectories(dir)) {
-    try {
-      const songData = await parseSong(songFolder);
-      if (songData) {
-        simfiles.push({
-          ...songData,
-          pack,
-        });
-      }
-    } catch (e) {
-      reportError(`parseStepchart failed for '${songFolder.name}'`, e);
-    }
-  }
-
-  pack.songCount = simfiles.length;
-
-  return <PackWithSongs>{
-    ...pack,
-    simfiles,
-  };
-}
-
-/**
- * For parsing a single song instead. Parses either a whole song folder, or just the metadata from a single simfile (ssc/sm/dwi)
- * @param item a data transfer item or HTML Input element a user has added a file selection to
- * @returns a simfile or null
- */
-export async function parseSongFolderOrData(
-  item: DataTransferItem | HTMLInputElement,
-): Promise<BrowserSimfile | null> {
-  let dirOrFile: FileSystemEntry | FileSystemHandle | File;
-  if (item instanceof HTMLInputElement) {
-    if ("webkitEntries" in item && item.webkitEntries.length > 0) {
-      const entries = item.webkitEntries;
-      if (entries.length > 1) {
-        throw new Error("expected exactly one selected file");
-      }
-      dirOrFile = entries[0];
-    } else if (item.files?.length) {
+    if (item.files?.length) {
       if (item.files.length > 1) {
         throw new Error("expected exactly one selected file");
       }
-      dirOrFile = item.files[0];
-    } else {
-      throw new Error("no files available on provided input");
+      return fromDom(item.files[0]);
     }
-  } else {
-    if (item.kind !== "file") {
-      throw new Error("expected file to be dropped, but it was not a file");
-    }
-    if (item.getAsFileSystemHandle) {
-      const dirHandle = await item.getAsFileSystemHandle();
-      if (!dirHandle) {
-        throw new Error("could not get file handle from drop item");
-      }
-      dirOrFile = dirHandle;
-    } else if ("webkitGetAsEntry" in item) {
-      const entry = item.webkitGetAsEntry();
-      if (!entry) {
-        throw new Error("could not get a file entry from drop item");
-      }
-      dirOrFile = entry;
-    } else {
-      throw new Error("no supported file drop mechanism supported");
-    }
+    throw new Error("no files available on provided input");
   }
-  return parseSong(dirOrFile as AnyFileOrEntry);
+  if (item.kind !== "file") {
+    throw new Error("expected file to be dropped, but it was not a file");
+  }
+  if (item.getAsFileSystemHandle) {
+    const handle = await item.getAsFileSystemHandle();
+    if (!handle) {
+      throw new Error("could not get file handle from drop item");
+    }
+    return fromDom(handle);
+  }
+  if ("webkitGetAsEntry" in item) {
+    const entry = item.webkitGetAsEntry();
+    if (!entry) {
+      throw new Error("could not get a file entry from drop item");
+    }
+    return fromDom(entry);
+  }
+  throw new Error("no supported file drop mechanism supported");
+}
+
+/**
+ * Expands a dropped or selected item into something parsable, opening it as an
+ * archive if that is what it turns out to be.
+ * @param item whatever the browser handed us
+ * @returns the item as a virtual filesystem entry
+ */
+async function resolveSource(item: BrowserSource): Promise<AnyEntry> {
+  const entry = await resolveItem(item);
+  if (isDir(entry)) {
+    return entry;
+  }
+  const file = await entry.file();
+  if (await isZip(file)) {
+    return openZip(file, stripZipExtension(entry.name));
+  }
+  return entry;
+}
+
+/**
+ * Parse a pack drag/dropped or selected by a user in a browser. The pack may
+ * be a folder of song folders or a `.zip` archive holding one, which is how
+ * packs are usually distributed; archives are read lazily, so only chart files
+ * and images are ever decompressed.
+ *
+ * If the pack is wrapped in extra folders — as archives commonly are — it is
+ * found inside them.
+ * @param item a DataTransferItem from a drop event, a file input, or a file
+ * @param name optional pack name, overriding the guess made from the folder
+ * @throws {Error} if more than one pack is found, or no songs at all
+ * @returns parsed pack
+ */
+export async function parsePack(
+  item: BrowserSource,
+  name?: string,
+): Promise<PackWithSongs> {
+  return parsePackFromEntry(await resolveSource(item), name);
+}
+
+/**
+ * Parse a single song, either a whole song folder or just the metadata from an
+ * individual chart file (ssc/sm/dwi).
+ * @param item a data transfer item, file input, or file
+ * @returns a simfile object without pack info, or null if no chart was found
+ */
+export async function parseSong(item: BrowserSource): Promise<Simfile | null> {
+  return parseSongFromEntry(await resolveSource(item));
 }

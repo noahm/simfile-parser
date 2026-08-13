@@ -89,19 +89,39 @@ export interface Simfile {
   stats: Stats;
 }
 
+/**
+ * A reference to an image belonging to a song. The contents are read on
+ * demand, so an image found while parsing is only loaded off disk or
+ * decompressed out of an archive if something actually asks for it.
+ */
+export interface ImageRef {
+  /** the image's own filename, e.g. `DDRMAX2-bn.png` */
+  name: string;
+  /** where the image lives on disk, or null if it came out of an archive */
+  path: string | null;
+  /** reads the image's contents */
+  file(): Promise<File>;
+}
+
 export interface Pack {
   name: string;
+  /** the name of the folder the pack lives in */
   dir: string;
+  /** the pack folder's path on disk, or null if it came out of an archive */
+  path: string | null;
   songCount: number;
 }
 
 export interface Title {
   titleName: string;
   translitTitleName: string | null;
+  /** the name of the folder the song lives in */
   titleDir: string;
-  banner: string | null;
-  bg: string | null;
-  jacket: string | null;
+  /** the song folder's path on disk, or null if it came out of an archive */
+  titlePath: string | null;
+  banner: ImageRef | null;
+  bg: ImageRef | null;
+  jacket: ImageRef | null;
 }
 
 export interface Subtitle {
