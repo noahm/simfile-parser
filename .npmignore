@@ -7,8 +7,10 @@ package-lock.json
 .editorconfig
 .nvmrc
 .yarn
+.vscode
+.yarnrc.yml
 Makefile
-.eslintrc.cjs
+*.config.mjs
 tsconfig.json
 *.sh
 .scripts
