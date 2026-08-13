@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.10.0
+
+- Added support for in-browser parsing of packs directly from a zip file, which is how packs are usually distributed. `parsePack` now accepts a dropped or selected zip in addition to a folder, and the new `parseZipPack` export takes a `File`/`Blob` directly. Archives are read lazily, so only the chart files and images are decompressed and the whole pack never has to be held in memory. Song folders may sit at the root of the archive or inside a pack folder.
+- Fixed browser directory listings being truncated for large folders.
+
 ## v0.9.0
 
 - Exposed the subtitle tag in parsed results for better noCmod support (thanks Vincent!)

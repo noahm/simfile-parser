@@ -5,200 +5,61 @@ import {
 } from "../parsers/index.js";
 import { ParsedImages, RawSimfile } from "../parsers/types.js";
 import { Simfile, Title } from "../types.js";
-import { extname, isAnyDirectory, isFileEntry } from "./shared.js";
+import { extname } from "./shared.js";
+import { AnyEntry, DirLike, FileLike, isDir } from "./vfs.js";
 
 /**
- * @param files a list of candidate files to use for song info
- * @returns the the most preferred candidate file
+ * Find the best simfile in a given directory
+ * @param songDir directory to search
+ * @returns the most preferred simfile found, or null
  */
-function getBestSongFileMatch<
-  T extends FileSystemFileEntry | FileSystemFileHandle,
->(files: T[]): T | null {
-  if (!files.length) {
-    return null;
-  }
-  files.sort((a, b) => {
-    return sortFileCandidatesByPriority(a.name, b.name);
-  });
-  return files[0];
-}
-
-/**
- * Find a simfile in a given directory
- * @param songDir directory handle
- * @returns file handle for the song file
- */
-async function identifySongFile(
-  songDir: FileSystemDirectoryHandle | FileSystemDirectoryEntry,
-) {
-  if ("createReader" in songDir) {
-    const candidates = await getSongFilesFromEntry(songDir);
-    return getBestSongFileMatch(candidates);
-  }
-
-  const candidates: FileSystemFileHandle[] = [];
-  for await (const handle of songDir.values()) {
-    if (handle.kind === "file") {
-      if (supportedExtensions.some((ext) => handle.name.endsWith(ext))) {
-        candidates.push(handle);
-      }
+async function identifySongFile(songDir: DirLike): Promise<FileLike | null> {
+  const candidates: FileLike[] = [];
+  for await (const entry of songDir.entries()) {
+    if (
+      !isDir(entry) &&
+      supportedExtensions.some((ext) => entry.name.endsWith(ext))
+    ) {
+      candidates.push(entry);
     }
   }
-  return getBestSongFileMatch(candidates);
-}
-
-/**
- * @param songDir legacy file system entry
- * @returns promise of the found file entry or null
- */
-async function getSongFilesFromEntry(songDir: FileSystemDirectoryEntry) {
-  const dirReader = songDir.createReader();
-  return new Promise<FileSystemFileEntry[]>((resolve, reject) => {
-    dirReader.readEntries((results) => {
-      const ret: FileSystemFileEntry[] = [];
-      for (const result of results) {
-        if (isFileEntry(result)) {
-          if (supportedExtensions.some((ext) => result.name.endsWith(ext))) {
-            ret.push(result);
-          }
-        }
-      }
-      resolve(ret);
-    }, reject);
-  });
+  if (!candidates.length) {
+    return null;
+  }
+  candidates.sort((a, b) => sortFileCandidatesByPriority(a.name, b.name));
+  return candidates[0];
 }
 
 const imageExts = new Set([".png", ".jpg"]);
 
 /**
  * Get all image files in a given directory
- * @param songDir directory
- * @yields {FileSystemDirectoryHandle | FileSystemDirectoryEntry} file handles filtered to supported image extentions
+ * @param songDir directory to search
+ * @yields {FileLike} each file with a supported image extension
  */
-async function* getImages(
-  songDir: FileSystemDirectoryHandle | FileSystemDirectoryEntry,
-) {
-  let files:
-    | AsyncIterable<FileSystemDirectoryHandle | FileSystemFileHandle>
-    | Iterable<FileSystemEntry>;
-  if ("values" in songDir) {
-    files = songDir.values();
-  } else {
-    files = await new Promise<FileSystemEntry[]>((res, rej) =>
-      songDir.createReader().readEntries(res, rej),
-    );
-  }
-  for await (const file of files) {
-    const ext = extname(file.name);
-    if (!ext) {
+async function* getImages(songDir: DirLike) {
+  for await (const entry of songDir.entries()) {
+    if (isDir(entry)) {
       continue;
     }
-    if ("kind" in file && file.kind === "directory") {
-      continue;
+    const ext = extname(entry.name);
+    if (ext && imageExts.has(ext)) {
+      yield entry;
     }
-    if ("isFile" in file && !isFileEntry(file)) {
-      continue;
-    }
-    if (imageExts.has(ext)) {
-      yield file as FileSystemFileEntry | FileSystemFileHandle;
-    }
-  }
-}
-
-/**
- * gets file handle/entry from a directory by name
- * @param dir directory handle or entry
- * @param name name of file to get
- * @returns promise of a handle or entry
- */
-async function getByName(dir: DirRef, name: string) {
-  if (name.startsWith("../")) {
-    if ("getFileHandle" in dir) {
-      throw new Error("no way to resolve upward relative paths using this api");
-    } else {
-      const parent = (await new Promise(
-        dir.getParent,
-      )) as FileSystemDirectoryEntry;
-      return getByName(parent, name.slice(3));
-    }
-  }
-  if ("getFileHandle" in dir) {
-    return dir.getFileHandle(name);
-  } else {
-    return new Promise<FileSystemFileEntry>((resolve, reject) =>
-      dir.getFile(
-        name,
-        {},
-        (e) => {
-          if (isFileEntry(e)) {
-            resolve(e);
-          } else {
-            reject("file was not usable?");
-          }
-        },
-        reject,
-      ),
-    );
-  }
-}
-
-/**
- * returns a file object from a handle/entry
- * @param f the file handle or file entry
- * @returns promise of File object
- */
-async function getFileContents(f: FileSystemFileHandle | FileSystemFileEntry) {
-  if ("getFile" in f) {
-    return f.getFile();
-  } else {
-    return new Promise<File>((res, reject) => {
-      const a = true;
-      f.file(res, (reason) => {
-        debugger;
-        reject(reason);
-      });
-      return a;
-    });
-  }
-}
-
-type DirRef = FileSystemDirectoryHandle | FileSystemDirectoryEntry;
-type FileRef = FileSystemFileHandle | FileSystemFileEntry;
-
-/**
- * Same as above, but catches and reports the error
- * @param dir directory reference
- * @param name file name or path
- * @returns promise of directory or null
- */
-async function guardedGetByName(dir: DirRef, name: string) {
-  try {
-    return await getByName(dir, name);
-  } catch {
-    return null;
   }
 }
 
 /**
  * Make some best guesses about which images should be used for which fields
- * @param songDir path to a song directory
+ * @param songDir the song's directory
  * @param tagged image metadata found in simfile
  * @returns final image metadata
  */
-async function guessImages(
-  songDir: FileSystemDirectoryHandle | FileSystemDirectoryEntry,
-  tagged: ParsedImages,
-) {
-  let jacket: FileRef | null = tagged.jacket
-    ? await guardedGetByName(songDir, tagged.jacket)
-    : null;
-  let bg: FileRef | null = tagged.bg
-    ? await guardedGetByName(songDir, tagged.bg)
-    : null;
-  let banner: FileRef | null = tagged.banner
-    ? await guardedGetByName(songDir, tagged.banner)
-    : null;
-  const leftovers: FileRef[] = [];
+async function guessImages(songDir: DirLike, tagged: ParsedImages) {
+  let jacket = tagged.jacket ? await songDir.getFile(tagged.jacket) : null;
+  let bg = tagged.bg ? await songDir.getFile(tagged.bg) : null;
+  let banner = tagged.banner ? await songDir.getFile(tagged.banner) : null;
+  const leftovers: FileLike[] = [];
   for await (const image of getImages(songDir)) {
     const imageName = image.name;
     const ext = extname(imageName) || "";
@@ -231,9 +92,9 @@ async function guessImages(
     jacket = leftovers.shift() || null;
   }
   return {
-    jacket: jacket ? await getFileContents(jacket) : null,
-    bg: bg ? await getFileContents(bg) : null,
-    banner: banner ? await getFileContents(banner) : null,
+    jacket: jacket ? await jacket.file() : null,
+    bg: bg ? await bg.file() : null,
+    banner: banner ? await banner.file() : null,
   };
 }
 
@@ -258,57 +119,20 @@ export type BrowserSimfile = Omit<Simfile, "title"> & {
 };
 
 /**
- * given a directory or file handle/entry, get the actual File instance for the simfile
- * @param entryOrHandle either a handle or entry type reference to a directory or file
- * @returns File or null if not found
- */
-async function getFileInstance(
-  entryOrHandle:
-    | FileSystemDirectoryHandle
-    | FileSystemDirectoryEntry
-    | FileSystemFileHandle
-    | FileSystemFileEntry,
-): Promise<File | null> {
-  let songFileHandleOrEntry: FileSystemFileHandle | FileSystemFileEntry;
-  if (isAnyDirectory(entryOrHandle)) {
-    const identified = await identifySongFile(entryOrHandle);
-    if (!identified) {
-      return null;
-    }
-    songFileHandleOrEntry = identified;
-  } else {
-    songFileHandleOrEntry = entryOrHandle;
-  }
-
-  let ret: File;
-  if ("getFile" in songFileHandleOrEntry) {
-    ret = await songFileHandleOrEntry.getFile();
-  } else {
-    ret = await new Promise((resolve, reject) =>
-      songFileHandleOrEntry.file(resolve, reject),
-    );
-  }
-  return ret;
-}
-
-/**
  * Parse a single simfile by folder or individual file. Automatically determines which parser to use depending on chart definition type.
  * @param songDirOrFile song folder or file reference (contains a chart definition file [dwi/sm/ssc], images, etc)
  * @returns a simfile object without mix info or null if no sm/ssc file was found
  */
 export async function parseSong(
-  songDirOrFile:
-    | FileSystemDirectoryHandle
-    | FileSystemDirectoryEntry
-    | FileSystemFileHandle
-    | FileSystemFileEntry
-    | File,
+  songDirOrFile: AnyEntry,
 ): Promise<BrowserSimfile | null> {
-  const file =
-    songDirOrFile instanceof File
-      ? songDirOrFile
-      : await getFileInstance(songDirOrFile);
-  if (!file) return null;
+  const songDir = isDir(songDirOrFile) ? songDirOrFile : null;
+  const songFile = songDir
+    ? await identifySongFile(songDir)
+    : (songDirOrFile as FileLike);
+  if (!songFile) return null;
+
+  const file = await songFile.file();
   const extension = extname(file.name);
   if (!extension) return null;
 
@@ -335,8 +159,8 @@ export async function parseSong(
     displayBpm = minBpm === maxBpm ? minBpm.toString() : `${minBpm}-${maxBpm}`;
   }
 
-  const finalImages = isAnyDirectory(songDirOrFile)
-    ? await guessImages(songDirOrFile, images)
+  const finalImages = songDir
+    ? await guessImages(songDir, images)
     : { banner: null, bg: null, jacket: null };
 
   return {
