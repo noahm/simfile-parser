@@ -1693,11 +1693,11 @@ __metadata:
   linkType: hard
 
 "baseline-browser-mapping@npm:^2.9.0":
-  version: 2.9.7
-  resolution: "baseline-browser-mapping@npm:2.9.7"
+  version: 2.11.21
+  resolution: "baseline-browser-mapping@npm:2.11.21"
   bin:
-    baseline-browser-mapping: dist/cli.js
-  checksum: 10/870ff0c62bbc4017afc0c4058fc67929034a3f0a1eecc31f7156b88ff2a629433ba2ce12cd84fa6f34b72748935cfa7d0067c723ec501195a0a807925732827a
+    baseline-browser-mapping: dist/cli.cjs
+  checksum: 10/b4d223df8dbb8deeaa3dae3b9b60ad48b24c57a5473827b5a6ee1c21917e7c37af2185224c5366f2932654ec5fb1a9fee4f95fe7213cc29f4347550f25e4234b
   languageName: node
   linkType: hard
 
